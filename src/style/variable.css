@@ -1,0 +1,10 @@
+:root {
+  --color-text: #333;
+  --color-primary: #7e5f9b;
+  --color-primary-light-1: #a87dba;
+  --color-primary-light-2: #c4a4d0;
+  --color-primary-light-3: #ead7e5;
+
+  --color-border: #dddfe6;
+  --color-overlay: rgb(0 0 0 / 0.7);
+}

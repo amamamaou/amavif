@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Amavif",
+  "version": "0.1.0",
+  "identifier": "com.amamamaou.amavif",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Amavif",
+        "width": 720,
+        "height": 880,
+        "minWidth": 640,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' blob: data: asset: http://asset.localhost ; script-src 'self' blob: data: assets: ; connect-src ipc: http://ipc.localhost",
+      "dangerousDisableAssetCspModification": ["blob:"],
+      "capabilities": ["main-capability"],
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$TEMP", "$HOME"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
