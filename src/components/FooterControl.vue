@@ -27,9 +27,9 @@ async function selectOutputPath() {
 
 /** 変換処理 */
 async function convert() {
-  const retust = await convertImage(image)
+  const result = await convertImage(image)
 
-  if (retust) {
+  if (result) {
     ElNotification({
       title: 'Completed',
       message: 'All done! Your images are ready.',
