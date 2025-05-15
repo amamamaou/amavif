@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { listen } from '@tauri-apps/api/event'
 import useImageStore from '@/store/image'
 
@@ -14,8 +14,8 @@ const percentage = computed<number>(() => {
 })
 
 // 値のリセット処理
-watch(isProcessing, (value) => {
-  if (value) {
+watchEffect(() => {
+  if (isProcessing.value) {
     count.value = 0
   }
 })
