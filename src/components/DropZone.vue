@@ -2,7 +2,7 @@
 import { openDialog } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
-import { mdiFileImagePlus, mdiFolderOpen } from '@mdi/js'
+import { mdiFileImagePlus } from '@mdi/js'
 import svgRender from '@/render/svg-render'
 import SvgIcon from '@/components/SvgIcon.vue'
 
@@ -19,16 +19,14 @@ async function addItems() {
   <div class="drop-zone">
     <div class="drop-message">
       <SvgIcon :path="mdiFileImagePlus" class="icon" />
-      <p class="text">
-        Drop your images here!
-      </p>
+      <p class="text">Drop your images here!</p>
     </div>
 
     <div class="drop-select">
       <span class="text">or</span>
       <el-button
         type="primary"
-        :icon="svgRender(mdiFolderOpen)"
+        :icon="svgRender(mdiFileImagePlus)"
         color="var(--color-primary)"
         class="button"
         @click="addItems"
