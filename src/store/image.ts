@@ -10,13 +10,22 @@ const useImageStore = defineStore('image', {
     quality: 80,
     output: '',
     isProcessing: false,
+    isLoading: false,
+    load: { total: 0, count: 0 },
   }),
 
   actions: {
     /** 画像を追加する */
     async addItems(paths: string[]): Promise<void> {
-      const { data, ...flags } = await getFileInfo(paths, this.standby)
+      this.isLoading = true
+      this.load.total = paths.length
+      this.load.count = 0
+
+      const { data, ...flags } = await getFileInfo(paths, this.standby, () => this.load.count++)
+
       this.standby = data
+      this.isLoading = false
+
       notification(flags)
     },
 

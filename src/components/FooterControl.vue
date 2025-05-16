@@ -49,7 +49,7 @@ async function convert() {
   <el-form
     :inline="true"
     label-position="left"
-    :disabled="image.isProcessing"
+    :disabled="image.isLoading || image.isProcessing"
   >
     <el-form-item label="Format" class="item-format">
       <el-select v-model="image.format" class="format-select">

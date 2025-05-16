@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { openDialog, openFileExplorer } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
@@ -14,6 +15,7 @@ import svgRender from '@/render/svg-render'
 
 const TrashIcon = svgRender(mdiTrashCanOutline)
 const image = useImageStore()
+const disabled = computed<boolean>(() => image.isLoading || image.isProcessing)
 
 /** ダイアログを開いてファイル追加する */
 async function addItems() {
@@ -42,7 +44,7 @@ function openOutputFolder() {
     <div class="list-header">
       <el-button
         :icon="svgRender(mdiFileImagePlus)"
-        :disabled="image.isProcessing"
+        :disabled="disabled"
         class="color-override"
         @click="addItems"
       >
@@ -52,7 +54,7 @@ function openOutputFolder() {
       <el-button
         type="danger"
         :icon="TrashIcon"
-        :disabled="image.isProcessing"
+        :disabled="disabled"
         @click="image.removeItems"
       >
         Remove All

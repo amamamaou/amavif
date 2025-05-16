@@ -38,6 +38,7 @@ type FileInfoResult = { data: FileInfoMap } & FileLoadFlags
 export async function getFileInfo(
   paths: string[],
   data: FileInfoMap,
+  onContinue: () => void,
 ): Promise<FileInfoResult> {
   const currentPaths = [...data.values()].map(item => item.path)
   let hasDuplicate = false
@@ -47,6 +48,7 @@ export async function getFileInfo(
     // 重複しているか
     if (currentPaths.includes(path)) {
       hasDuplicate = true
+      onContinue()
       continue
     }
 
@@ -55,6 +57,7 @@ export async function getFileInfo(
     // 変換対象の画像形式か
     if (!isAllowInputMIMEType(mimeType)) {
       hasUnsupported = true
+      onContinue()
       continue
     }
 
@@ -64,6 +67,7 @@ export async function getFileInfo(
     const fileSize = await invoke<number>('get_file_size', { path })
 
     data.set(uuid, { path, fileName, baseName, mimeType, size: { before: fileSize, after: 0 } })
+    onContinue()
   }
 
   return { data, hasDuplicate, hasUnsupported }

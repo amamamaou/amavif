@@ -28,6 +28,7 @@ declare module 'vue' {
     FooterControl: typeof import('./src/components/FooterControl.vue')['default']
     ImageList: typeof import('./src/components/ImageList.vue')['default']
     ListContainer: typeof import('./src/components/ListContainer.vue')['default']
+    LoadingDialog: typeof import('./src/components/LoadingDialog.vue')['default']
     ProcessingDialog: typeof import('./src/components/ProcessingDialog.vue')['default']
     SvgIcon: typeof import('./src/components/SvgIcon.vue')['default']
   }

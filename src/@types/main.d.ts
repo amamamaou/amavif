@@ -30,6 +30,11 @@ interface ImagesStore {
   quality: number;
   output: string;
   isProcessing: boolean;
+  isLoading: boolean;
+  load: {
+    total: number;
+    count: number;
+  };
 }
 
 /** 画像ファイル読み込み時のお知らせフラグ */

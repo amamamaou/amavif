@@ -4,8 +4,6 @@ import { listen } from '@tauri-apps/api/event'
 import useImageStore from '@/store/image'
 
 const image = useImageStore()
-
-const isProcessing = defineModel<boolean>({ required: true })
 const count = ref(0)
 
 const percentage = computed<number>(() => {
@@ -15,7 +13,7 @@ const percentage = computed<number>(() => {
 
 // 値のリセット処理
 watchEffect(() => {
-  if (isProcessing.value) {
+  if (image.isProcessing) {
     count.value = 0
   }
 })
@@ -29,7 +27,7 @@ listen('progress', (event) => {
 
 <template>
   <el-dialog
-    v-model="isProcessing"
+    v-model="image.isProcessing"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :show-close="false"

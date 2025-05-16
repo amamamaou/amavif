@@ -6,13 +6,14 @@ import useImageStore from '@/store/image'
 import MainLayout from '@/layout/MainLayout.vue'
 import FooterControl from '@/components/FooterControl.vue'
 import DropOverlay from '@/components/DropOverlay.vue'
+import LoadingDialog from '@/components/LoadingDialog.vue'
 import ProcessingDialog from '@/components/ProcessingDialog.vue'
 
 const image = useImageStore()
 const isDropEnter = ref<boolean>(false)
 
 listen('tauri://drag-enter', () => {
-  if (!image.isProcessing) {
+  if (!image.isLoading && !image.isProcessing) {
     isDropEnter.value = true
   }
 })
@@ -22,7 +23,7 @@ listen('tauri://drag-leave', () => {
 })
 
 listen('tauri://drag-drop', (event) => {
-  if (!image.isProcessing) {
+  if (!image.isLoading && !image.isProcessing) {
     const paths = (event.payload as { paths: string[] }).paths
     image.addItems(paths)
   }
@@ -45,8 +46,11 @@ listen('tauri://drag-drop', (event) => {
   <!-- ドラッグ&ドロップ時のオーバーレイ -->
   <DropOverlay :is-drop-enter="isDropEnter" />
 
+  <!-- 読込中ダイアログ -->
+  <LoadingDialog />
+
   <!-- 処理中ダイアログ -->
-  <ProcessingDialog v-model="image.isProcessing" />
+  <ProcessingDialog />
 </template>
 
 <style scoped>
