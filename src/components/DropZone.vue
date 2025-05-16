@@ -25,10 +25,8 @@ async function addItems() {
     <div class="drop-select">
       <span class="text">or</span>
       <el-button
-        type="primary"
         :icon="svgRender(mdiFileImagePlus)"
-        color="var(--color-primary)"
-        class="button"
+        class="button color-override"
         @click="addItems"
       >
         Select Images

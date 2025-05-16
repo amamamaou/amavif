@@ -68,10 +68,8 @@ async function convert() {
 
     <el-form-item label="Output" class="item-output">
       <el-button
-        type="primary"
         plain
-        color="var(--color-primary)"
-        class="select-button"
+        class="select-button color-override"
         @click="selectOutputPath"
       >
         Select
@@ -92,10 +90,8 @@ async function convert() {
         :disabled="enableConvert"
       >
         <el-button
-          type="primary"
           size="large"
-          color="var(--color-primary)"
-          class="convert-button"
+          class="convert-button color-override"
           :disabled="!enableConvert"
           @click="convert"
         >
