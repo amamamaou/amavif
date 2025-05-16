@@ -27,6 +27,11 @@ export async function openDialog(): Promise<string[]> {
   return paths ?? []
 }
 
+/** 指定したパスを開く */
+export async function openFileExplorer(path: string): Promise<void> {
+  return invoke<void>('open_file_explorer', { path })
+}
+
 type FileInfoResult = { data: FileInfoMap } & FileLoadFlags
 
 /** ファイル情報を取得する */

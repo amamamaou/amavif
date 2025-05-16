@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { openDialog } from '@/libs/utility'
+import { openDialog, openFileExplorer } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
 import ImageList from '@/components/ImageList.vue'
+import { ElNotification } from 'element-plus'
 
 import {
   mdiFileImagePlus,
+  mdiFolderOpen,
   mdiTrashCanOutline,
 } from '@mdi/js'
 import svgRender from '@/render/svg-render'
@@ -17,6 +19,21 @@ const image = useImageStore()
 async function addItems() {
   const paths = await openDialog()
   image.addItems(paths)
+}
+
+/** 出力先を開く */
+function openOutputFolder() {
+  if (image.output) {
+    openFileExplorer(image.output).catch((error) => {
+      if (typeof error == 'string') {
+        ElNotification({
+          title: 'Error',
+          message: error,
+          type: 'error',
+        })
+      }
+    })
+  }
 }
 </script>
 
@@ -41,6 +58,17 @@ async function addItems() {
       >
         Remove All
       </el-button>
+
+      <el-button
+        type="primary"
+        plain
+        :icon="svgRender(mdiFolderOpen)"
+        color="var(--color-primary)"
+        :disabled="image.output === ''"
+        @click="openOutputFolder"
+      >
+        Open Output Folder
+      </el-button>
     </div>
 
     <el-scrollbar class="list-wrapper">
@@ -58,12 +86,19 @@ async function addItems() {
 }
 
 .list-header {
+  display: flex;
   padding: 12px 20px;
   background-color: #fff;
   border-bottom: 1px solid var(--el-border-color);
 
   .el-button {
-    font-weight: 700;
+    &:not(.is-plain) {
+      font-weight: 700;
+    }
+
+    &:last-child {
+      margin-left: auto;
+    }
 
     :deep(.el-icon) {
       font-size: 1.2em;

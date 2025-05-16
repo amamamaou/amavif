@@ -5,6 +5,7 @@ use rgb::FromSlice;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+use std::process::Command;
 use tauri::Emitter;
 use webp::Encoder as WebpEncoder;
 
@@ -17,6 +18,7 @@ pub fn run() {
             get_mime_type,
             get_file_size,
             convert_images,
+            open_file_explorer,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -148,4 +150,40 @@ async fn convert_images(
         .collect::<Vec<_>>();
 
     Ok(output_data)
+}
+
+// 指定したパスを開く
+#[tauri::command]
+fn open_file_explorer(path: String) -> Result<(), String> {
+    let path = PathBuf::from(path);
+
+    if !path.exists() {
+        return Err("Oops! That path doesn’t seem to exist.".into());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        Command::new("open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(target_os = "windows")]
+    {
+        Command::new("explorer")
+            .arg(path.to_str().ok_or("Oops! That’s not a valid path.")?)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        Command::new("xdg-open")
+            .arg(&path)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }
