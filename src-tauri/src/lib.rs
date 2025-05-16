@@ -51,8 +51,8 @@ impl ExtensionType {
 // ファイルの MIME Type を取得する
 #[tauri::command]
 fn get_mime_type(path: String) -> String {
-    let data = fs::read(&path).unwrap_or(vec![]);
-    infer::get(&data)
+    infer::get_from_path(&path)
+        .expect("file read successfully")
         .map(|kind| kind.mime_type())
         .unwrap_or("application/octet-stream")
         .to_string()
