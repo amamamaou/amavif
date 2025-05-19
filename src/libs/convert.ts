@@ -9,8 +9,8 @@ export default async function convertImage(
   image.isProcessing = true
 
   /** Tauri側へ渡す値 */
-  const fileData = [...image.standby.entries()].map(([uuid, item]) => {
-    return { uuid, path: item.path, file_name: item.baseName }
+  const fileData = [...image.standby.entries()].map(([uuid, { path, baseName, directory }]) => {
+    return { uuid, path, file_name: baseName, directory }
   })
 
   // 変換開始

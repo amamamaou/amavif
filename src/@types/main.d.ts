@@ -12,6 +12,7 @@ interface FileInfo {
   path: string;
   fileName: string;
   baseName: string;
+  directory?: string;
   mimeType: ImageMIMEType;
   size: {
     before: number;
@@ -39,6 +40,7 @@ interface ImagesStore {
 
 /** 画像ファイル読み込み時のお知らせフラグ */
 interface FileLoadFlags {
-  hasDuplicate: boolean;
-  hasUnsupported: boolean;
+  duplicate: boolean;
+  directory: boolean;
+  unsupported: boolean;
 }

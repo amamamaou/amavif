@@ -4,7 +4,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rgb::FromSlice;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use tauri::Emitter;
 use webp::Encoder as WebpEncoder;
@@ -17,6 +17,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_mime_type,
             get_file_size,
+            get_image_files_in_dir,
             convert_images,
             open_file_explorer,
         ])
@@ -29,6 +30,7 @@ struct FileInfo {
     uuid: String,
     path: String,
     file_name: String,
+    directory: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -38,7 +40,7 @@ enum ExtensionType {
     Avif,
 }
 
-// 画像形式判別
+/// 画像形式判別
 impl ExtensionType {
     fn get_extension_str(&self) -> &str {
         match self {
@@ -48,17 +50,20 @@ impl ExtensionType {
     }
 }
 
-// ファイルの MIME Type を取得する
+/// ファイルの MIME Type を取得する
 #[tauri::command]
 fn get_mime_type(path: String) -> String {
-    infer::get_from_path(&path)
-        .expect("file read successfully")
-        .map(|kind| kind.mime_type())
-        .unwrap_or("application/octet-stream")
-        .to_string()
+    let result = if Path::new(&path).is_dir() {
+        "directory"
+    } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
+        kind.mime_type()
+    } else {
+        "unknown"
+    };
+    result.to_string()
 }
 
-// ファイルサイズを取得する
+/// ファイルサイズを取得する
 #[tauri::command]
 fn get_file_size(path: String) -> u64 {
     fs::metadata(&path)
@@ -66,7 +71,35 @@ fn get_file_size(path: String) -> u64 {
         .unwrap_or(0)
 }
 
-// WebP変換処理
+/// 対象とする画像の拡張子
+const IMAGE_EXTENSIONS: [&str; 4] = ["png", "jpg", "jpeg", "webp"];
+
+/// 指定したディレクトリの直下にある画像ファイルのパスを取得する
+#[tauri::command]
+fn get_image_files_in_dir(path: String) -> Vec<String> {
+    let path = Path::new(&path);
+    let mut image_files = Vec::new();
+
+    if let Ok(entries) = fs::read_dir(path) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_file() {
+                if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                    if IMAGE_EXTENSIONS.iter().any(|&e| e.eq_ignore_ascii_case(ext)) {
+                        // PathBuf → String へ変換
+                        if let Some(p) = path.to_str() {
+                            image_files.push(p.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    image_files
+}
+
+/// WebP変換処理
 fn encode_to_webp(path: String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
     let img = image::open(path)?;
     let webp_data = WebpEncoder::from_image(&img)
@@ -78,7 +111,7 @@ fn encode_to_webp(path: String, output_path: &PathBuf, quality: u8) -> ImageResu
     Ok(())
 }
 
-// AVIF変換処理
+/// AVIF変換処理
 fn encode_to_avif(path: String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
     let img = image::open(path)?;
     let buffer = img.to_rgba8();
@@ -104,7 +137,7 @@ struct ConvertProgress {
     uuid: String,
 }
 
-// 画像変換処理
+/// 画像変換処理
 #[tauri::command]
 async fn convert_images(
     app: tauri::AppHandle,
@@ -124,8 +157,20 @@ async fn convert_images(
     let output_data = file_data
         .par_iter()
         .filter_map(|item| {
-            let output_path = output_dir
-                .join(format!("{}.{}", item.file_name, format.get_extension_str()));
+            let mut output_path = output_dir.clone();
+
+            // ディレクトリ持ちの場合
+            if !item.directory.is_empty() {
+                output_path = output_path.join(item.directory.clone());
+
+                // もしディレクトリが存在しない場合は作る
+                if !output_path.is_dir() {
+                    std::fs::create_dir_all(&output_path).ok()?;
+                }
+            }
+
+            // ファイル名と拡張子を結合する
+            output_path = output_path.join(format!("{}.{}", item.file_name, format.get_extension_str()));
 
             match format {
                 ExtensionType::Webp => {
@@ -152,7 +197,7 @@ async fn convert_images(
     Ok(output_data)
 }
 
-// 指定したパスを開く
+/// 指定したパスを開く
 #[tauri::command]
 fn open_file_explorer(path: String) -> Result<(), String> {
     let path = PathBuf::from(path);
