@@ -9,20 +9,12 @@ import useImageStore from '@/store/image'
 const image = useImageStore()
 
 const format = computed<ImageFormat>({
-  get() {
-    return image.format
-  },
-  set(value) {
-    image.setFormat(value)
-  },
+  get() { return image.format },
+  set(value) { image.setFormat(value) },
 })
 const quality = computed<number>({
-  get() {
-    return image.quality
-  },
-  set(value) {
-    image.setQuality(value)
-  },
+  get() { return image.quality },
+  set(value) { image.setQuality(value) },
 })
 
 const allDisabled = computed<boolean>(() => image.isLoading || image.isProcessing)

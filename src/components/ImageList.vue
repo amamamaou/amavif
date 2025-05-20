@@ -5,11 +5,7 @@ import { formatBytes, getFormatName } from '@/libs/utility'
 import useImageStore from '@/store/image'
 import { ElNotification } from 'element-plus'
 
-import {
-  mdiArrowRight,
-  mdiCheckCircle,
-  mdiTrashCanOutline,
-} from '@mdi/js'
+import { mdiArrowRight,  mdiCheckCircle, mdiTrashCanOutline } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 import svgRender from '@/render/svg-render'
 

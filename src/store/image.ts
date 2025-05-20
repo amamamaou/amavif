@@ -21,9 +21,9 @@ const useImageStore = defineStore('image', {
   actions: {
     /** 設定を読み込む */
     async loadSettings(): Promise<void> {
-      const format = await store.get<ImageFormat>('fileFormat')
+      const format = await store.get<ImageFormat>('format')
       const quality = await store.get<number>('quality')
-      const output = await store.get<string>('outputDirectory')
+      const output = await store.get<string>('output')
 
       if (format) this.format = format
       if (quality) this.quality = quality

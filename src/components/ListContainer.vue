@@ -6,11 +6,7 @@ import useImageStore from '@/store/image'
 import ImageList from '@/components/ImageList.vue'
 import { ElNotification } from 'element-plus'
 
-import {
-  mdiFileImagePlus,
-  mdiFolderOpen,
-  mdiTrashCanOutline,
-} from '@mdi/js'
+import { mdiFileImagePlus, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
 import svgRender from '@/render/svg-render'
 
 const TrashIcon = svgRender(mdiTrashCanOutline)
