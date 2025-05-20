@@ -120,10 +120,11 @@ export async function getFileInfo(
     const uuid = crypto.randomUUID()
     const fileName = await basename(path)
     const fileSize = await invoke<number>('get_file_size', { path })
+    const dirPath = directory !== '' ? directory + '/' : ''
 
     fileInfoMap.set(uuid, {
       path,
-      fileName,
+      fileName: dirPath + fileName,
       baseName: fileName.replace(/\.\w+$/, ''),
       directory,
       mimeType,

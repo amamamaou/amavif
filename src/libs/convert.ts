@@ -32,11 +32,12 @@ export default async function convertImage(
     const orig = image.standby.get(uuid)
     if (!orig) continue
 
+    const dirPath = orig.directory ? orig.directory + '/' : ''
     const afterSize = await invoke<number>('get_file_size', { path })
 
     image.complete.set(uuid, {
       path,
-      fileName: `${orig.baseName}.${image.format}`,
+      fileName: `${dirPath}${orig.baseName}.${image.format}`,
       baseName: orig.baseName,
       mimeType: `image/${image.format}`,
       size: {
