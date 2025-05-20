@@ -26,7 +26,8 @@ async function addItems() {
       <span class="text">or</span>
       <el-button
         :icon="svgRender(mdiFileImagePlus)"
-        class="button color-override"
+        color="var(--color-primary)"
+        class="button"
         @click="addItems"
       >
         Select Images

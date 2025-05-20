@@ -13,9 +13,7 @@ const percentage = computed<number>(() => {
 
 // 値のリセット処理
 watchEffect(() => {
-  if (image.isProcessing) {
-    count.value = 0
-  }
+  if (image.isProcessing) count.value = 0
 })
 
 // 進捗処理

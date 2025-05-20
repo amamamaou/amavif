@@ -45,7 +45,7 @@ function openOutputFolder() {
       <el-button
         :icon="svgRender(mdiFileImagePlus)"
         :disabled="disabled"
-        class="color-override"
+        color="var(--color-primary)"
         @click="addItems"
       >
         Add Images
@@ -64,7 +64,7 @@ function openOutputFolder() {
         plain
         :icon="svgRender(mdiFolderOpen)"
         :disabled="image.output === ''"
-        class="color-override"
+        color="var(--color-primary)"
         @click="openOutputFolder"
       >
         Open Output Folder

@@ -74,22 +74,11 @@ export async function collectPaths(
       } else {
         const newPaths = await invoke<string[]>('get_image_files_in_dir', { path })
         const dirName = await basename(path)
-        const {
-          data: nestData,
-          flags: nestFlags,
-        } = await collectPaths(newPaths, currentPaths, dirName)
+        const { data: nestData, flags: nestFlags } = await collectPaths(newPaths, currentPaths, dirName)
 
-        if (nestFlags.duplicate) {
-          flags.duplicate = true
-        }
-
-        if (nestFlags.directory) {
-          flags.directory = true
-        }
-
-        if (nestFlags.unsupported) {
-          flags.unsupported = true
-        }
+        if (nestFlags.duplicate) flags.duplicate = true
+        if (nestFlags.directory) flags.directory = true
+        if (nestFlags.unsupported) flags.unsupported = true
 
         data.push(...nestData)
       }
