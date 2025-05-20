@@ -12,8 +12,9 @@ use webp::Encoder as WebpEncoder;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             get_mime_type,
             get_file_size,
@@ -25,29 +26,13 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
+/// ファイル情報
 #[derive(Debug, Serialize, Deserialize)]
 struct FileInfo {
     uuid: String,
     path: String,
     file_name: String,
     directory: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "snake_case")]
-enum ExtensionType {
-    Webp,
-    Avif,
-}
-
-/// 画像形式判別
-impl ExtensionType {
-    fn get_extension_str(&self) -> &str {
-        match self {
-            ExtensionType::Webp => "webp",
-            ExtensionType::Avif => "avif",
-        }
-    }
 }
 
 /// ファイルの MIME Type を取得する
@@ -80,9 +65,11 @@ fn get_image_files_in_dir(path: String) -> Vec<String> {
     let path = Path::new(&path);
     let mut image_files = Vec::new();
 
+    // ディレクトリ配下を取得
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries.flatten() {
             let path = entry.path();
+
             if path.is_file() {
                 if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
                     if IMAGE_EXTENSIONS.iter().any(|&e| e.eq_ignore_ascii_case(ext)) {
@@ -102,6 +89,7 @@ fn get_image_files_in_dir(path: String) -> Vec<String> {
 /// WebP変換処理
 fn encode_to_webp(path: String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
     let img = image::open(path)?;
+
     let webp_data = WebpEncoder::from_image(&img)
         .unwrap()
         .encode(quality as f32);
@@ -115,11 +103,13 @@ fn encode_to_webp(path: String, output_path: &PathBuf, quality: u8) -> ImageResu
 fn encode_to_avif(path: String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
     let img = image::open(path)?;
     let buffer = img.to_rgba8();
+
     let new_img = imgref::Img::new(
         buffer.as_rgba(),
         img.width() as usize,
         img.height() as usize,
     );
+
     let avif_data = AvifEncoder::new()
         .with_quality(quality as f32)
         .encode_rgba(new_img)
@@ -142,7 +132,7 @@ struct ConvertProgress {
 async fn convert_images(
     app: tauri::AppHandle,
     file_data: Vec<FileInfo>,
-    format: ExtensionType,
+    format: String,
     quality: u8,
     output: String,
 ) -> Result<Vec<(String, PathBuf)>, tauri::Error> {
@@ -170,25 +160,19 @@ async fn convert_images(
             }
 
             // ファイル名と拡張子を結合する
-            output_path = output_path.join(format!("{}.{}", item.file_name, format.get_extension_str()));
+            output_path = output_path.join(format!("{}.{}", item.file_name, format));
 
-            match format {
-                ExtensionType::Webp => {
-                    encode_to_webp(item.path.clone(), &output_path, quality).ok()?;
-                }
-
-                ExtensionType::Avif => {
-                    encode_to_avif(item.path.clone(), &output_path, quality).ok()?;
-                }
+            if format == String::from("webp") {
+                encode_to_webp(item.path.clone(), &output_path, quality).ok()?;
+            } else if format == String::from("avif") {
+                encode_to_avif(item.path.clone(), &output_path, quality).ok()?;
             }
 
             // 進行状況を通知
             app.emit(
                 "progress",
                 ConvertProgress { uuid: item.uuid.clone() },
-            )
-                .ok()
-                .unwrap();
+            ).ok()?;
 
             Some((item.uuid.clone(), output_path))
         })

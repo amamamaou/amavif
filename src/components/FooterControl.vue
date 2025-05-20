@@ -8,6 +8,24 @@ import useImageStore from '@/store/image'
 
 const image = useImageStore()
 
+const format = computed<ImageFormat>({
+  get() {
+    return image.format
+  },
+  set(value) {
+    image.setFormat(value)
+  },
+})
+const quality = computed<number>({
+  get() {
+    return image.quality
+  },
+  set(value) {
+    image.setQuality(value)
+  },
+})
+
+const allDisabled = computed<boolean>(() => image.isLoading || image.isProcessing)
 const enableConvert = computed<boolean>(() => image.output !== '' && image.standby.size > 0)
 const tooltipContent = computed<string>(() => {
   if (image.standby.size === 0) return 'No images selected'
@@ -20,9 +38,9 @@ async function selectOutputPath() {
   const path = await open({
     title: 'Select Output',
     directory: true,
+    defaultPath: image.output || undefined,
   })
-
-  image.output = path ?? ''
+  image.setOutput(path ?? '')
 }
 
 /** 変換処理 */
@@ -49,10 +67,10 @@ async function convert() {
   <el-form
     :inline="true"
     label-position="left"
-    :disabled="image.isLoading || image.isProcessing"
+    :disabled="allDisabled"
   >
     <el-form-item label="Format" class="item-format">
-      <el-select v-model="image.format" class="format-select">
+      <el-select v-model="format" class="format-select">
         <el-option label="WebP" value="webp" />
         <el-option label="AVIF" value="avif" />
       </el-select>
@@ -60,7 +78,7 @@ async function convert() {
 
     <el-form-item label="Quality" class="item-quality">
       <el-slider
-        v-model="image.quality"
+        v-model="quality"
         show-input
         class="quality-slider"
       />
@@ -69,7 +87,8 @@ async function convert() {
     <el-form-item label="Output" class="item-output">
       <el-button
         plain
-        class="select-button color-override"
+        color="var(--color-primary)"
+        class="select-button"
         @click="selectOutputPath"
       >
         Select
@@ -91,7 +110,8 @@ async function convert() {
       >
         <el-button
           size="large"
-          class="convert-button color-override"
+          color="var(--color-primary)"
+          class="convert-button"
           :disabled="!enableConvert"
           @click="convert"
         >
