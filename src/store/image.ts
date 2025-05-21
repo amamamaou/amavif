@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { collectPaths, getFileInfo } from '@/libs/utility'
 import notification from '@/libs/notification'
 
+/** 設定ファイルStore */
 const store = new LazyStore('settings.json')
 
 /** 変換情報ストア */
@@ -51,14 +52,12 @@ const useImageStore = defineStore('image', {
     async setFormat(format: ImageFormat): Promise<void> {
       this.format = format
       await store.set('format', format)
-      await store.save()
     },
 
     /** クオリティを保存する */
     async setQuality(quality: number): Promise<void> {
       this.quality = quality
       await store.set('quality', quality)
-      await store.save()
     },
 
     /** 出力先パスを保存する */
@@ -68,7 +67,6 @@ const useImageStore = defineStore('image', {
 
       this.output = output
       await store.set('output', output)
-      await store.save()
     },
 
     /** 画像を追加する */
