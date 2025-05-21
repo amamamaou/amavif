@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { openDialog, openFileExplorer } from '@/libs/utility'
+import { openDialog, openFileExplorer, svgRender } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
-import ImageList from '@/components/ImageList.vue'
 import { ElNotification } from 'element-plus'
-
 import { mdiFileImagePlus, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
-import svgRender from '@/render/svg-render'
+import ImageList from '@/components/ImageList.vue'
 
 const image = useImageStore()
 

@@ -1,3 +1,4 @@
+import { h, type VNode } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { basename } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -153,4 +154,11 @@ export function getFormatName(type: string): string {
 /** sleep関数 */
 export function sleep(time: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, time))
+}
+
+/** mdiアイコンをsvgのVNodeにする */
+export function svgRender(path: string): VNode {
+  return h('svg', { viewBox: '0 0 24 24' }, [
+    h('path', { d: path, fill: 'currentcolor' }),
+  ])
 }

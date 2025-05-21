@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { openDialog } from '@/libs/utility'
+import { openDialog, svgRender } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
 import { mdiFileImagePlus } from '@mdi/js'
-import svgRender from '@/render/svg-render'
 import SvgIcon from '@/components/SvgIcon.vue'
 
 const image = useImageStore()

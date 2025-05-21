@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/core'
-
-import { formatBytes, getFormatName } from '@/libs/utility'
+import { getFormatName, formatBytes, svgRender } from '@/libs/utility'
 import useImageStore from '@/store/image'
-import { ElNotification } from 'element-plus'
 
+import { ElNotification } from 'element-plus'
 import { mdiArrowRight,  mdiCheckCircle, mdiTrashCanOutline } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
-import svgRender from '@/render/svg-render'
 
 withDefaults(defineProps<{
   data: FileInfoMap;
