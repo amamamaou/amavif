@@ -4,7 +4,7 @@ import { listen } from '@tauri-apps/api/event'
 import useImageStore from '@/store/image'
 
 const image = useImageStore()
-const count = ref(0)
+const count = ref<number>(0)
 
 const percentage = computed<number>(() => {
   if (image.standby.size === 0) return 100

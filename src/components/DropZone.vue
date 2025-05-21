@@ -8,7 +8,7 @@ import SvgIcon from '@/components/SvgIcon.vue'
 const image = useImageStore()
 
 /** ダイアログを開いてファイル追加する */
-async function addItems() {
+async function addItems(): Promise<void> {
   const paths = await openDialog()
   image.addItems(paths)
 }

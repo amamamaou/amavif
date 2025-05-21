@@ -25,13 +25,13 @@ const tooltipContent = computed<string>(() => {
 })
 
 /** 出力先選択 */
-async function selectOutput() {
+async function selectOutput(): Promise<void> {
   const path = await selectDialog(image.output)
   image.setOutput(path)
 }
 
 /** 変換処理 */
-async function convert() {
+async function convert(): Promise<void> {
   const result = await convertImage()
 
   if (result) {

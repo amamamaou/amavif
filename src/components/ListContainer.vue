@@ -9,13 +9,13 @@ import ImageList from '@/components/ImageList.vue'
 const image = useImageStore()
 
 /** ダイアログを開いてファイル追加する */
-async function addItems() {
+async function addItems(): Promise<void> {
   const paths = await openDialog()
   image.addItems(paths)
 }
 
 /** 出力先を開く */
-function openOutputFolder() {
+function openOutputFolder(): void {
   if (image.output) {
     openFileExplorer(image.output).catch((error) => {
       if (typeof error == 'string') {

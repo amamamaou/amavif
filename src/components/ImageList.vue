@@ -18,7 +18,7 @@ const TrashIcon = svgRender(mdiTrashCanOutline)
 const image = useImageStore()
 
 /** 画像がエラーになったときの通知 */
-function imageErrorNotice(uuid: string, fileName: string) {
+function imageErrorNotice(uuid: string, fileName: string): void {
   image.removeItem(uuid)
 
   ElNotification({
