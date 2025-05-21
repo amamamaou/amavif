@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { open } from '@tauri-apps/plugin-dialog'
+import { selectDialog } from '@/libs/utility'
 import convertImage from '@/libs/convert'
 
 import { ElNotification } from 'element-plus'
@@ -25,13 +25,9 @@ const tooltipContent = computed<string>(() => {
 })
 
 /** 出力先選択 */
-async function selectOutputPath() {
-  const path = await open({
-    title: 'Select Output',
-    directory: true,
-    defaultPath: image.output || undefined,
-  })
-  image.setOutput(path ?? '')
+async function selectOutput() {
+  const path = await selectDialog(image.output)
+  image.setOutput(path)
 }
 
 /** 変換処理 */
@@ -80,7 +76,7 @@ async function convert() {
         plain
         color="var(--color-primary)"
         class="select-button"
-        @click="selectOutputPath"
+        @click="selectOutput"
       >
         Select
       </el-button>
@@ -89,7 +85,7 @@ async function convert() {
         :value="image.output"
         placeholder="Plese Select..."
         readonly
-        @click="selectOutputPath"
+        @click="selectOutput"
       />
     </el-form-item>
 

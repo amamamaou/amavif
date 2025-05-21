@@ -24,8 +24,17 @@ export async function openDialog(): Promise<string[]> {
       },
     ],
   })
-
   return paths ?? []
+}
+
+/** 出力先選択ダイアログを開く */
+export async function selectDialog(defaultPath: string): Promise<string> {
+  const path = await open({
+    title: 'Select Output',
+    directory: true,
+    defaultPath: defaultPath || undefined,
+  })
+  return path ?? ''
 }
 
 /** 指定したパスを開く */
