@@ -1,34 +1,15 @@
 import { invoke } from '@tauri-apps/api/core'
-import { type Store } from 'pinia'
 import { sleep } from '@/libs/utility'
+import useImageStore from '@/store/image'
 
-/** 画像を変換する */
-export default async function convertImage(
-  image: Store<'image', ImagesStore>,
-): Promise<boolean> {
-  image.isProcessing = true
+/** 変換後のデータ整理 */
+async function setConverted(
+  data: [string, string][],
+  removeItem: boolean = false,
+): Promise<void> {
+  const image = useImageStore()
 
-  /** Tauri側へ渡す値 */
-  const fileData = [...image.standby.entries()].map(([uuid, { path, baseName, directory }]) => {
-    return { uuid, path, file_name: baseName, directory }
-  })
-
-  // 変換開始
-  const result = await invoke<[string, string][]>('convert_images', {
-    fileData,
-    format: image.format,
-    quality: image.quality,
-    output: image.output,
-  }).catch((error) => {
-    // eslint-disable-next-line no-console
-    if (error instanceof Error) console.error(error.message)
-    return null
-  })
-
-  if (result === null) return false
-
-  // 変換後のデータ整理
-  for (const [uuid, path] of result) {
+  for (const [uuid, path] of data) {
     const orig = image.standby.get(uuid)
     if (!orig) continue
 
@@ -45,12 +26,57 @@ export default async function convertImage(
         after: afterSize,
       },
     })
+
+    if (removeItem) image.standby.delete(uuid)
   }
+}
+
+/** 画像を変換する */
+export default async function convertImage(): Promise<boolean> {
+  const image = useImageStore()
+
+  image.isProcessing = true
+
+  /** Tauri側へ渡す値 */
+  const fileData = [...image.standby.entries()].map(([uuid, { path, baseName, directory }]) => {
+    const file_name = `${baseName}.${image.format}`
+    return { uuid, path, file_name, directory }
+  })
+
+  // 変換開始
+  const result = await invoke<[string, string][]>('convert_images', {
+    fileData,
+    format: image.format,
+    quality: image.quality,
+    output: image.output,
+  }).catch((error) => {
+    // eslint-disable-next-line no-console
+    if (error instanceof Error) console.error(error.message)
+    return null
+  })
+
+  // 変換中にエラーが出た場合
+  if (result === null || result.length < fileData.length) {
+    const existFiles = await invoke<[string, string][]>('check_existing_files', {
+      fileData,
+      output: image.output,
+    })
+
+    await setConverted(existFiles, true)
+    await sleep(400)
+
+    image.isProcessing = false
+
+    return false
+  }
+
+  // 変換後のデータ整理
+  await setConverted(result)
 
   // 変換対象リストを空にする
   image.standby.clear()
 
-  await sleep(500)
+  await sleep(400)
 
   image.isProcessing = false
 

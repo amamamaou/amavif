@@ -7,6 +7,6 @@ const image = useImageStore()
 </script>
 
 <template>
-  <ListContainer v-if="image.standby.size > 0 || image.complete.size > 0" />
-  <DropZone v-else />
+  <DropZone v-if="image.isEmpty" />
+  <ListContainer v-else />
 </template>

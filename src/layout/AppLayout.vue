@@ -13,7 +13,7 @@ const image = useImageStore()
 const isDropEnter = ref<boolean>(false)
 
 listen('tauri://drag-enter', () => {
-  if (!image.isLoading && !image.isProcessing) {
+  if (!image.isLocked) {
     isDropEnter.value = true
   }
 })
@@ -23,7 +23,7 @@ listen('tauri://drag-leave', () => {
 })
 
 listen('tauri://drag-drop', (event) => {
-  if (!image.isLoading && !image.isProcessing) {
+  if (!image.isLocked) {
     const paths = (event.payload as { paths: string[] }).paths
     image.addItems(paths)
   }

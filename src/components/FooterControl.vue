@@ -17,8 +17,7 @@ const quality = computed<number>({
   set(value) { image.setQuality(value) },
 })
 
-const allDisabled = computed<boolean>(() => image.isLoading || image.isProcessing)
-const enableConvert = computed<boolean>(() => image.output !== '' && image.standby.size > 0)
+/** ツールチップメッセージ */
 const tooltipContent = computed<string>(() => {
   if (image.standby.size === 0) return 'No images selected'
   if (image.output === '') return 'Select output folder'
@@ -37,7 +36,7 @@ async function selectOutputPath() {
 
 /** 変換処理 */
 async function convert() {
-  const result = await convertImage(image)
+  const result = await convertImage()
 
   if (result) {
     ElNotification({
@@ -59,7 +58,7 @@ async function convert() {
   <el-form
     :inline="true"
     label-position="left"
-    :disabled="allDisabled"
+    :disabled="image.isLocked"
   >
     <el-form-item label="Format" class="item-format">
       <el-select v-model="format" class="format-select">
@@ -98,13 +97,13 @@ async function convert() {
       <el-tooltip
         :content="tooltipContent"
         placement="top"
-        :disabled="enableConvert"
+        :disabled="image.canConvert"
       >
         <el-button
           size="large"
           color="var(--color-primary)"
           class="convert-button"
-          :disabled="!enableConvert"
+          :disabled="!image.canConvert"
           @click="convert"
         >
           Convert

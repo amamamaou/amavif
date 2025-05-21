@@ -18,6 +18,23 @@ const useImageStore = defineStore('image', {
     load: { total: 0, count: 0 },
   }),
 
+  getters: {
+    /** すべてのアイテムが空か */
+    isEmpty(state): boolean {
+      return state.standby.size === 0 && state.complete.size === 0
+    },
+
+    /** 操作ができない状態か */
+    isLocked(state): boolean {
+      return state.isLoading || state.isProcessing
+    },
+
+    /** 変換が可能かどうか */
+    canConvert(state): boolean {
+      return state.output !== '' && state.standby.size > 0
+    },
+  },
+
   actions: {
     /** 設定を読み込む */
     async loadSettings(): Promise<void> {
@@ -46,6 +63,9 @@ const useImageStore = defineStore('image', {
 
     /** 出力先パスを保存する */
     async setOutput(output: string): Promise<void> {
+      // 出力先パスが変更された場合、変換済み一覧は消す
+      if (output !== this.output) this.complete.clear()
+
       this.output = output
       await store.set('output', output)
       await store.save()

@@ -20,6 +20,7 @@ pub fn run() {
             get_file_size,
             get_image_files_in_dir,
             convert_images,
+            check_existing_files,
             open_file_explorer,
         ])
         .run(tauri::generate_context!())
@@ -151,7 +152,7 @@ async fn convert_images(
 
             // ディレクトリ持ちの場合
             if !item.directory.is_empty() {
-                output_path = output_path.join(item.directory.clone());
+                output_path = output_path.join(&item.directory);
 
                 // もしディレクトリが存在しない場合は作る
                 if !output_path.is_dir() {
@@ -159,8 +160,8 @@ async fn convert_images(
                 }
             }
 
-            // ファイル名と拡張子を結合する
-            output_path = output_path.join(format!("{}.{}", item.file_name, format));
+            // ファイル名を結合する
+            output_path = output_path.join(&item.file_name);
 
             if format == String::from("webp") {
                 encode_to_webp(item.path.clone(), &output_path, quality).ok()?;
@@ -181,13 +182,43 @@ async fn convert_images(
     Ok(output_data)
 }
 
+/// 変換したファイルが存在するか確認
+#[tauri::command]
+fn check_existing_files(
+    file_data: Vec<FileInfo>,
+    output: String,
+) -> Vec<(String, PathBuf)> {
+    let output_dir = PathBuf::from(&output);
+
+    file_data
+        .into_iter()
+        .filter_map(|item| {
+            let mut output_path = output_dir.clone();
+
+            // ディレクトリ持ちの場合
+            if !item.directory.is_empty() {
+                output_path = output_path.join(item.directory);
+            }
+
+            // ファイル名を結合する
+            output_path = output_path.join(item.file_name);
+
+            if output_path.is_file() {
+                Some((item.uuid, output_path))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
 /// 指定したパスを開く
 #[tauri::command]
 fn open_file_explorer(path: String) -> Result<(), String> {
     let path = PathBuf::from(path);
 
     if !path.exists() {
-        return Err("Oops! That path doesn’t seem to exist.".into());
+        return Err("Oops! That output path doesn’t seem to exist.".into());
     }
 
     #[cfg(target_os = "macos")]
@@ -206,13 +237,13 @@ fn open_file_explorer(path: String) -> Result<(), String> {
             .map_err(|e| e.to_string())?;
     }
 
-    #[cfg(target_os = "linux")]
-    {
-        Command::new("xdg-open")
-            .arg(&path)
-            .spawn()
-            .map_err(|e| e.to_string())?;
-    }
+    // #[cfg(target_os = "linux")]
+    // {
+    //     Command::new("xdg-open")
+    //         .arg(&path)
+    //         .spawn()
+    //         .map_err(|e| e.to_string())?;
+    // }
 
     Ok(())
 }
