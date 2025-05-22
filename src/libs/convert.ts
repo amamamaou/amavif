@@ -2,9 +2,11 @@ import { invoke } from '@tauri-apps/api/core'
 import { sleep } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
+type ConvertedData = [string, string][]
+
 /** 変換後のデータ整理 */
 async function setConverted(
-  data: [string, string][],
+  data: ConvertedData,
   removeItem: boolean = false,
 ): Promise<void> {
   const image = useImageStore()
@@ -38,13 +40,14 @@ export default async function convertImage(): Promise<boolean> {
   image.isProcessing = true
 
   /** Tauri側へ渡す値 */
-  const fileData = [...image.standby.entries()].map(([uuid, { path, baseName, directory }]) => {
-    const file_name = `${baseName}.${image.format}`
-    return { uuid, path, file_name, directory }
-  })
+  const fileData = [...image.standby.entries()]
+    .map(([uuid, { path, baseName, directory = '' }]) => {
+      const file_name = `${baseName}.${image.format}`
+      return { uuid, path, file_name, directory }
+    })
 
   // 変換開始
-  const result = await invoke<[string, string][]>('convert_images', {
+  const result = await invoke<ConvertedData>('convert_images', {
     fileData,
     format: image.format,
     quality: image.quality,
@@ -57,7 +60,7 @@ export default async function convertImage(): Promise<boolean> {
 
   // 変換中にエラーが出た場合
   if (result === null || result.length < fileData.length) {
-    const existFiles = await invoke<[string, string][]>('check_existing_files', {
+    const existFiles = await invoke<ConvertedData>('check_existing_files', {
       fileData,
       output: image.output,
     })
