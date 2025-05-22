@@ -43,96 +43,99 @@ export async function openFileExplorer(path: string): Promise<void> {
   return invoke<void>('open_file_explorer', { path })
 }
 
-/** 整えられたデータ */
-interface CollectedImageData {
+/** 整えられたパスデータ */
+interface CollectedPathData {
   path: string;
-  mimeType: ImageMIMEType;
-  directory: string;
+  directory?: string;
 }
 
-/** パスから情報を取得し整える */
+/** ディレクトリが含まれるパスを整える */
 export async function collectPaths(
   paths: string[],
-  currentPaths: string[],
-  directory: string = '',
+  directory?: string,
 ): Promise<{
-  data: CollectedImageData[];
-  flags: FileLoadFlags;
+  data: CollectedPathData[];
+  hasSubDir: boolean;
 }> {
-  const flags: FileLoadFlags = {
-    duplicate: false,
-    directory: false,
-    unsupported: false,
-  }
-  const data: CollectedImageData[] = []
+  const data: CollectedPathData[] = []
+  let hasSubDir = false
 
   for (const path of paths) {
+    const isDirectory = await invoke<boolean>('is_directory', { path })
+
+    // ディレクトリかどうか
+    if (isDirectory) {
+      if (directory) {
+        // 再帰的処理は行わない
+        hasSubDir = true
+      } else {
+        // 直下の画像ファイルを取得する
+        const newPaths = await invoke<string[]>('get_image_files_in_dir', { path })
+        const dirName = await basename(path)
+        const children = await collectPaths(newPaths, dirName)
+
+        if (children.hasSubDir) hasSubDir = true
+
+        data.push(...children.data)
+      }
+
+      continue
+    } else {
+      data.push({ path, directory })
+    }
+  }
+
+  return { data, hasSubDir }
+}
+
+/** ファイル情報を取得する */
+export async function getFileInfo(
+  data: CollectedPathData[],
+  currentPaths: string[],
+  onContinue: () => void,
+): Promise<{
+  fileInfo: FileInfoMap;
+  flags: Omit<FileLoadFlags, 'directory'>;
+}> {
+  const fileInfo: FileInfoMap = new Map()
+  const flags: Omit<FileLoadFlags, 'directory'> = {
+    duplicate: false,
+    unsupported: false,
+  }
+
+  for (const { path, directory } of data) {
     // 重複しているか
     if (currentPaths.includes(path)) {
       flags.duplicate = true
+      onContinue()
       continue
     }
 
     // MIMEタイプ取得
     const mimeType = await invoke<string>('get_mime_type', { path })
 
-    // 渡されたパスがディレクトリの場合は直下の画像ファイルを取得する
-    if (mimeType === 'directory') {
-      if (directory !== '') {
-        // 再帰的処理は行わない
-        flags.directory = true
-      } else {
-        const newPaths = await invoke<string[]>('get_image_files_in_dir', { path })
-        const dirName = await basename(path)
-        const { data: nestData, flags: nestFlags } = await collectPaths(newPaths, currentPaths, dirName)
+    // 変換対象の画像形式か確認
+    if (isAllowInputMIMEType(mimeType)) {
+      const uuid = crypto.randomUUID()
+      const fileName = await basename(path)
+      const fileSize = await invoke<number>('get_file_size', { path })
 
-        if (nestFlags.duplicate) flags.duplicate = true
-        if (nestFlags.directory) flags.directory = true
-        if (nestFlags.unsupported) flags.unsupported = true
-
-        data.push(...nestData)
-      }
-
-      continue
-    }
-
-    // 変換対象の画像形式か
-    if (!isAllowInputMIMEType(mimeType)) {
+      fileInfo.set(uuid, {
+        path,
+        fileName: (directory ? directory + '/' : '') + fileName,
+        baseName: fileName.replace(/\.\w+$/, ''),
+        directory,
+        mimeType,
+        size: { before: fileSize, after: 0 },
+      })
+    } else {
       flags.unsupported = true
-      continue
     }
 
-    data.push({ path, mimeType, directory })
-  }
-
-  return { data, flags }
-}
-
-/** ファイル情報を取得する */
-export async function getFileInfo(
-  data: CollectedImageData[],
-  onContinue: () => void,
-): Promise<FileInfoMap> {
-  const fileInfoMap: FileInfoMap = new Map()
-
-  for (const { path, mimeType, directory } of data) {
-    const uuid = crypto.randomUUID()
-    const fileName = await basename(path)
-    const fileSize = await invoke<number>('get_file_size', { path })
-    const dirPath = directory !== '' ? directory + '/' : ''
-
-    fileInfoMap.set(uuid, {
-      path,
-      fileName: dirPath + fileName,
-      baseName: fileName.replace(/\.\w+$/, ''),
-      directory,
-      mimeType,
-      size: { before: fileSize, after: 0 },
-    })
     onContinue()
   }
 
-  return fileInfoMap
+  return { fileInfo, flags }
 }
 
 /** バイト数を変換 */

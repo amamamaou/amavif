@@ -16,6 +16,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
+            is_directory,
             get_mime_type,
             get_file_size,
             get_image_files_in_dir,
@@ -36,6 +37,12 @@ struct FileInfo {
     directory: String,
 }
 
+/// ディレクトリか確認する
+#[tauri::command]
+fn is_directory(path: String) -> bool {
+    Path::new(&path).is_dir()
+}
+
 /// ファイルの MIME Type を取得する
 #[tauri::command]
 fn get_mime_type(path: String) -> String {
@@ -44,7 +51,7 @@ fn get_mime_type(path: String) -> String {
     } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
         kind.mime_type()
     } else {
-        "unknown"
+        "application/octet-stream"
     };
     result.to_string()
 }

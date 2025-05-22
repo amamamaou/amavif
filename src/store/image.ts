@@ -77,17 +77,20 @@ const useImageStore = defineStore('image', {
       this.load.total = 0
       this.load.count = 0
 
-      const currentPaths = [...this.standby.values()].map(item => item.path)
-      const { data, flags } = await collectPaths(paths, currentPaths)
+      // ディレクトリが含まれる場合があるので先に整える
+      const { data, hasSubDir } = await collectPaths(paths)
 
       this.load.total = data.length
 
-      const fileInfo = await getFileInfo(data, () => this.load.count++)
+      const currentPaths = [...this.standby.values()].map(item => item.path)
+
+      // パスから画像情報を取得する
+      const { fileInfo, flags } = await getFileInfo(data, currentPaths, () => this.load.count++)
 
       this.standby = new Map([...this.standby, ...fileInfo])
       this.isLoading = false
 
-      notification(flags)
+      notification({ directory: hasSubDir, ...flags })
     },
 
     /** 画像をリストから取り除く */
