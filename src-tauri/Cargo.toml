@@ -1,6 +1,6 @@
 [package]
 name = "Amavif"
-version = "0.4.5"
+version = "0.4.6"
 description = "Simple tool for converting images to WebP/AVIF."
 authors = ["Sachino Totome <@amamamaou>"]
 edition = "2021"
