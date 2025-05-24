@@ -64,7 +64,7 @@ function openOutputFolder(): void {
 
     <el-scrollbar class="list-wrapper">
       <ImageList :data="image.standby" />
-      <ImageList :data="image.complete" :is-complete="true" />
+      <ImageList :data="image.complete" is-complete />
     </el-scrollbar>
   </div>
 </template>

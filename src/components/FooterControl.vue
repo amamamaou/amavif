@@ -52,7 +52,7 @@ async function convert(): Promise<void> {
 
 <template>
   <el-form
-    :inline="true"
+    inline
     label-position="left"
     :disabled="image.isLocked"
   >

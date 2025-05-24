@@ -20,7 +20,7 @@ const percentage = computed<number>(() => {
   >
     <div class="dialog-content">
       <el-progress
-        :text-inside="true"
+        text-inside
         :stroke-width="24"
         :percentage="percentage"
         color="var(--color-primary)"

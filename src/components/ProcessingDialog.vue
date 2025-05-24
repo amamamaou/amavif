@@ -45,7 +45,7 @@ listen('progress', (event) => {
 
       <el-progress
         v-else
-        :text-inside="true"
+        text-inside
         :stroke-width="24"
         :percentage="percentage"
         color="var(--color-primary)"
