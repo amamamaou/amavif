@@ -42,7 +42,7 @@ async function addItems(): Promise<void> {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--el-text-color-regular);
+  color: var(--color-text);
 }
 
 .drop-message {

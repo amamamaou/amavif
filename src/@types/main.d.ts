@@ -7,6 +7,12 @@ type AllowInputMIMEType = `image/${'jpeg' | 'png' | 'webp'}`
 /** 扱いうる画像のMIMEタイプ */
 type ImageMIMEType = 'image/avif' | AllowInputMIMEType
 
+/** ファイルサイズデータ */
+interface FileSizeData {
+  before: number;
+  after: number;
+}
+
 /** 画像の情報 */
 interface FileInfo {
   path: string;
@@ -14,10 +20,8 @@ interface FileInfo {
   baseName: string;
   directory?: string;
   mimeType: ImageMIMEType;
-  size: {
-    before: number;
-    after: number;
-  };
+  fileSrc: string;
+  size: FileSizeData;
 }
 
 /** UUIDによる画像情報のマップ */

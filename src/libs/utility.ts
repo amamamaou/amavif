@@ -1,5 +1,5 @@
 import { h, type VNode } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
+import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { basename } from '@tauri-apps/api/path'
 import { open } from '@tauri-apps/plugin-dialog'
 
@@ -126,6 +126,7 @@ export async function getFileInfo(
         baseName: fileName.replace(/\.\w+$/, ''),
         directory,
         mimeType,
+        fileSrc: convertFileSrc(path),
         size: { before: fileSize, after: 0 },
       })
     } else {

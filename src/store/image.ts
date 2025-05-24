@@ -34,6 +34,25 @@ const useImageStore = defineStore('image', {
     canConvert(state): boolean {
       return state.output !== '' && state.standby.size > 0
     },
+
+    /** 変換前のトータルファイルサイズ */
+    standbySize(state): number {
+      let total = 0
+      for (const { size: { before } } of state.standby.values()) {
+        total += before
+      }
+      return total
+    },
+
+    /** 変換後のトータルファイルサイズデータ */
+    convertedSize(state): FileSizeData {
+      const data: FileSizeData = { before: 0, after: 0 }
+      for (const { size: { before, after } } of state.complete.values()) {
+        data.before += before
+        data.after += after
+      }
+      return data
+    },
   },
 
   actions: {

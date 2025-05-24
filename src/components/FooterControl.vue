@@ -125,6 +125,7 @@ async function convert(): Promise<void> {
       flex-shrink: 0;
       width: 60px;
       padding-right: 0;
+      color: var(--color-text);
       font-weight: 700;
     }
   }
@@ -132,6 +133,10 @@ async function convert(): Promise<void> {
   .item-quality {
     :deep(.el-slider__runway) {
       margin-right: 24px;
+    }
+
+    :deep(.el-input) {
+      --el-input-text-color: var(--color-text);
     }
 
     :deep(.el-input-number) {
@@ -160,6 +165,7 @@ async function convert(): Promise<void> {
 
 .format-select {
   --el-color-primary: var(--color-primary);
+  --el-input-text-color: var(--color-text);
 }
 
 .quality-slider {
