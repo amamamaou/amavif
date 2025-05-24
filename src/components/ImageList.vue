@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { convertFileSrc } from '@tauri-apps/api/core'
 import { getFormatName, formatBytes, svgRender } from '@/libs/utility'
 import useImageStore from '@/store/image'
 
 import { ElNotification } from 'element-plus'
-import { mdiArrowRight,  mdiCheckCircle, mdiTrashCanOutline } from '@mdi/js'
+import { mdiArrowRight, mdiCheckCircle, mdiLoupe, mdiTrashCanOutline } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 
 withDefaults(defineProps<{
@@ -14,6 +13,7 @@ withDefaults(defineProps<{
   isComplete: false,
 })
 
+const LoupeIcon = svgRender(mdiLoupe)
 const TrashIcon = svgRender(mdiTrashCanOutline)
 const image = useImageStore()
 
@@ -26,6 +26,12 @@ function imageErrorNotice(uuid: string, fileName: string): void {
     message: `Oops! '${fileName}' isn’t a supported image.`,
     type: 'error',
   })
+}
+
+/** 画像プレビュー */
+function previewImage(id: string): void {
+  const el = document.getElementById('image-' + id)
+  el?.firstElementChild?.dispatchEvent(new Event('click'))
 }
 </script>
 
@@ -47,11 +53,17 @@ function imageErrorNotice(uuid: string, fileName: string): void {
       />
 
       <figure class="item-image">
-        <img
-          :src="convertFileSrc(item.path)"
+        <el-image
+          :id="`image-${uuid}`"
+          :src="item.fileSrc"
           :alt="item.fileName"
+          :preview-src-list="[item.fileSrc]"
+          preview-teleported
+          hide-on-click-modal
           @error="imageErrorNotice(uuid, item.fileName)"
-        >
+        />
+
+        <SvgIcon :path="mdiLoupe" />
       </figure>
 
       <div class="item-content">
@@ -106,15 +118,35 @@ function imageErrorNotice(uuid: string, fileName: string): void {
         </div>
       </div>
 
-      <div class="item-remove">
-        <el-button
-          type="danger"
-          :icon="TrashIcon"
-          circle
-          plain
-          :disabled="image.isProcessing"
-          @click="image.removeItem(uuid)"
-        />
+      <div class="item-buttons">
+        <el-tooltip
+          content="Click to preview"
+          placement="top"
+          :hide-after="0"
+        >
+          <el-button
+            :icon="LoupeIcon"
+            circle
+            plain
+            color="var(--color-primary)"
+            @click="previewImage(uuid)"
+          />
+        </el-tooltip>
+
+        <el-tooltip
+          content="Remove this item"
+          placement="top"
+          :hide-after="0"
+        >
+          <el-button
+            type="danger"
+            :icon="TrashIcon"
+            circle
+            plain
+            :disabled="image.isProcessing"
+            @click="image.removeItem(uuid)"
+          />
+        </el-tooltip>
       </div>
     </li>
   </ul>
@@ -136,12 +168,11 @@ function imageErrorNotice(uuid: string, fileName: string): void {
 
 .list-item {
   position: relative;
-  z-index: 0;
   display: grid;
-  grid-template-columns: 110px 1fr auto;
+  grid-template-columns: 100px 1fr auto;
   gap: 16px;
   align-items: center;
-  padding: 16px 0;
+  padding: 12px 0;
 
   &:nth-child(n+2) {
     border-top: 1px solid var(--el-border-color);
@@ -149,8 +180,9 @@ function imageErrorNotice(uuid: string, fileName: string): void {
 
   .status-complete {
     position: absolute;
-    top: 20px;
-    left: 4px;
+    top: 14px;
+    left: 2px;
+    z-index: 10;
     width: 16px;
     background-color: #fff;
     border-radius: 50%;
@@ -159,10 +191,35 @@ function imageErrorNotice(uuid: string, fileName: string): void {
   }
 
   .item-image {
-    img {
+    position: relative;
+    z-index: 5;
+
+    .el-image {
       width: 100%;
       aspect-ratio: 16/9;
-      object-fit: contain;
+      vertical-align: bottom;
+
+      :deep(img) {
+        object-fit: contain;
+        transition: background-color 0.2s, opacity 0.2s;
+
+        &:hover {
+          background-color: rgb(0 0 0 / 5%);
+          opacity: 0.8;
+        }
+      }
+    }
+
+    .svg-icon {
+      position: absolute;
+      right: 2px;
+      bottom: 2px;
+      z-index: 1;
+      border-radius: 8px 8px 2px 8px;
+      background-color: #fff;
+      color: var(--color-primary);
+      width: 14px;
+      pointer-events: none;
     }
   }
 
@@ -174,8 +231,9 @@ function imageErrorNotice(uuid: string, fileName: string): void {
     overflow: hidden;
     width: 100%;
     text-overflow: ellipsis;
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 700;
+    line-height: 1.4;
     white-space: nowrap;
   }
 

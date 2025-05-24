@@ -3,6 +3,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 
 import '@/style/main.css'
-import '@/style/el-notification.css'
+import '@/style/element-plus.css'
 
-createApp(App).use(createPinia()).mount('#app')
+createApp(App)
+  .use(createPinia())
+  .mount('#app')

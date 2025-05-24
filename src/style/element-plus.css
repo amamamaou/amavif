@@ -1,5 +1,10 @@
-/* Pick from element-plus/dist/index.css */
+/* overlay */
+.el-overlay,
+.el-image-viewer__wrapper {
+  backdrop-filter: blur(5px);
+}
 
+/* Pick from element-plus/dist/index.css */
 .el-notification {
   --el-notification-width: 330px;
   --el-notification-padding: 14px 26px 14px 13px;
