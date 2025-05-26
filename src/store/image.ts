@@ -56,14 +56,10 @@ const useImageStore = defineStore('image', {
 
   actions: {
     /** 画像を追加する */
-    async addImages(paths: string[]): Promise<void> {
-      await addImages(paths)
-    },
+    addImages,
 
-    /** 変換する */
-    async convert(): Promise<void> {
-      await convertImages()
-    },
+    /** 画像を変換する */
+    convertImages,
 
     /** 設定を読み込む */
     async loadSettings(): Promise<void> {

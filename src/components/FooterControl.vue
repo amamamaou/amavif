@@ -79,7 +79,7 @@ async function selectOutput(): Promise<void> {
           color="var(--color-primary)"
           class="convert-button"
           :disabled="!image.canConvert"
-          @click="image.convert"
+          @click="image.convertImages"
         >
           Convert
         </el-button>
