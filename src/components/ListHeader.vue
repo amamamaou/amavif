@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { openDialog, openFileExplorer, svgRender } from '@/libs/utility'
+import { openDialog, openFileExplorer, svgRender } from '@/libs/utils'
 import useImageStore from '@/store/image'
 
 import { ElNotification } from 'element-plus'
@@ -8,9 +8,9 @@ import { mdiFileImagePlus, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
 const image = useImageStore()
 
 /** ダイアログを開いてファイル追加する */
-async function addItems(): Promise<void> {
+async function addImages(): Promise<void> {
   const paths = await openDialog()
-  image.addItems(paths)
+  image.addImages(paths)
 }
 
 /** 出力先を開く */
@@ -35,7 +35,7 @@ function openOutputFolder(): void {
       :icon="svgRender(mdiFileImagePlus)"
       :disabled="image.isLocked"
       color="var(--color-primary)"
-      @click="addItems"
+      @click="addImages"
     >
       Add Images
     </el-button>

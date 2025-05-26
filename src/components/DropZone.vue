@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { openDialog, svgRender } from '@/libs/utility'
+import { openDialog, svgRender } from '@/libs/utils'
 import useImageStore from '@/store/image'
 
 import { mdiFileImagePlus } from '@mdi/js'
@@ -8,9 +8,9 @@ import SvgIcon from '@/components/SvgIcon.vue'
 const image = useImageStore()
 
 /** ダイアログを開いてファイル追加する */
-async function addItems(): Promise<void> {
+async function addImages(): Promise<void> {
   const paths = await openDialog()
-  image.addItems(paths)
+  image.addImages(paths)
 }
 </script>
 
@@ -27,7 +27,7 @@ async function addItems(): Promise<void> {
         :icon="svgRender(mdiFileImagePlus)"
         color="var(--color-primary)"
         class="button"
-        @click="addItems"
+        @click="addImages"
       >
         Select Images
       </el-button>

@@ -70,11 +70,11 @@ const IMAGE_EXTENSIONS: [&str; 4] = ["png", "jpg", "jpeg", "webp"];
 /// 指定したディレクトリの直下にある画像ファイルのパスを取得する
 #[tauri::command]
 fn get_image_files_in_dir(path: String) -> Vec<String> {
-    let path = Path::new(&path);
+    let dir_path = Path::new(&path);
     let mut image_files = Vec::new();
 
     // ディレクトリ配下を取得
-    if let Ok(entries) = fs::read_dir(path) {
+    if let Ok(entries) = fs::read_dir(dir_path) {
         for entry in entries.flatten() {
             let path = entry.path();
 

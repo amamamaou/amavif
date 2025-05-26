@@ -44,7 +44,7 @@ interface ImagesStore {
 
 /** 画像ファイル読み込み時のお知らせフラグ */
 interface FileLoadFlags {
-  duplicate: boolean;
   directory: boolean;
+  duplicate: boolean;
   unsupported: boolean;
 }

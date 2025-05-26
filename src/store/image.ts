@@ -1,7 +1,6 @@
-import { LazyStore } from '@tauri-apps/plugin-store'
 import { defineStore } from 'pinia'
-import { collectPaths, getFileInfo } from '@/libs/utility'
-import notification from '@/libs/notification'
+import { LazyStore } from '@tauri-apps/plugin-store'
+import { addImages, convertImages } from '@/libs/image-service'
 
 /** 設定ファイルStore */
 const store = new LazyStore('settings.json')
@@ -20,6 +19,11 @@ const useImageStore = defineStore('image', {
   }),
 
   getters: {
+    /** 変換が可能かどうか */
+    canConvert(state): boolean {
+      return state.output !== '' && state.standby.size > 0
+    },
+
     /** すべてのアイテムが空か */
     isEmpty(state): boolean {
       return state.standby.size === 0 && state.complete.size === 0
@@ -28,11 +32,6 @@ const useImageStore = defineStore('image', {
     /** 操作ができない状態か */
     isLocked(state): boolean {
       return state.isLoading || state.isProcessing
-    },
-
-    /** 変換が可能かどうか */
-    canConvert(state): boolean {
-      return state.output !== '' && state.standby.size > 0
     },
 
     /** 変換前のトータルファイルサイズ */
@@ -56,6 +55,16 @@ const useImageStore = defineStore('image', {
   },
 
   actions: {
+    /** 画像を追加する */
+    async addImages(paths: string[]): Promise<void> {
+      await addImages(paths)
+    },
+
+    /** 変換する */
+    async convert(): Promise<void> {
+      await convertImages()
+    },
+
     /** 設定を読み込む */
     async loadSettings(): Promise<void> {
       const format = await store.get<ImageFormat>('format')
@@ -65,51 +74,6 @@ const useImageStore = defineStore('image', {
       if (format) this.format = format
       if (quality) this.quality = quality
       if (output) this.output = output
-    },
-
-    /** 形式を保存する */
-    async setFormat(format: ImageFormat): Promise<void> {
-      this.format = format
-      await store.set('format', format)
-    },
-
-    /** クオリティを保存する */
-    async setQuality(quality: number): Promise<void> {
-      this.quality = quality
-      await store.set('quality', quality)
-    },
-
-    /** 出力先パスを保存する */
-    async setOutput(output: string): Promise<void> {
-      // 出力先パスが変更された場合、変換済み一覧は消す
-      if (output !== this.output) this.complete.clear()
-
-      this.output = output
-      await store.set('output', output)
-    },
-
-    /** 画像を追加する */
-    async addItems(paths: string[]): Promise<void> {
-      if (paths.length === 0) return
-
-      this.isLoading = true
-      this.load.total = 0
-      this.load.count = 0
-
-      // ディレクトリが含まれる場合があるので先に整える
-      const { data, hasSubDir } = await collectPaths(paths)
-
-      this.load.total = data.length
-
-      const currentPaths = [...this.standby.values()].map(item => item.path)
-
-      // パスから画像情報を取得する
-      const { fileInfo, flags } = await getFileInfo(data, currentPaths, () => this.load.count++)
-
-      this.standby = new Map([...this.standby, ...fileInfo])
-      this.isLoading = false
-
-      notification({ directory: hasSubDir, ...flags })
     },
 
     /** 画像をリストから取り除く */
@@ -122,6 +86,27 @@ const useImageStore = defineStore('image', {
     removeItems(): void {
       this.standby.clear()
       this.complete.clear()
+    },
+
+    /** 形式を保存する */
+    async setFormat(format: ImageFormat): Promise<void> {
+      this.format = format
+      await store.set('format', format)
+    },
+
+    /** 出力先パスを保存する */
+    async setOutput(output: string): Promise<void> {
+      // 出力先パスが変更された場合、変換済み一覧は消す
+      if (output !== this.output) this.complete.clear()
+
+      this.output = output
+      await store.set('output', output)
+    },
+
+    /** クオリティを保存する */
+    async setQuality(quality: number): Promise<void> {
+      this.quality = quality
+      await store.set('quality', quality)
     },
   },
 })

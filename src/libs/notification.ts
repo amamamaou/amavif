@@ -1,8 +1,25 @@
 import { ElNotification } from 'element-plus'
-import { sleep } from '@/libs/utility'
+import { sleep } from '@/libs/utils'
+
+/** 変換結果の通知 */
+export function convertNotification(result: boolean): void {
+  if (result) {
+    ElNotification({
+      title: 'Completed',
+      message: 'All done! Your images are ready.',
+      type: 'success',
+    })
+  } else {
+    ElNotification({
+      title: 'Failed',
+      message: 'Oops! Couldn’t convert the images.',
+      type: 'error',
+    })
+  }
+}
 
 /** ファイル読み込み時の通知処理 */
-export default async function notification(flags: FileLoadFlags): Promise<void> {
+export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // 重複したとき
   if (flags.duplicate) {
     ElNotification({

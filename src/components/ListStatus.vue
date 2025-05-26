@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { formatBytes } from '@/libs/utility'
+import { formatBytes } from '@/libs/utils'
 import useImageStore from '@/store/image'
 
 import { mdiArrowRight } from '@mdi/js'

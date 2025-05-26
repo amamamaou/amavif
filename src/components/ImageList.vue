@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getFormatName, formatBytes, svgRender } from '@/libs/utility'
+import { getFormatName, formatBytes, svgRender } from '@/libs/utils'
 import useImageStore from '@/store/image'
 
 import { ElNotification } from 'element-plus'
@@ -62,8 +62,6 @@ function previewImage(id: string): void {
           hide-on-click-modal
           @error="imageErrorNotice(uuid, item.fileName)"
         />
-
-        <SvgIcon :path="mdiLoupe" />
       </figure>
 
       <div class="item-content">
@@ -183,7 +181,7 @@ function previewImage(id: string): void {
     top: 14px;
     left: 2px;
     z-index: 10;
-    width: 16px;
+    width: 14px;
     background-color: #fff;
     border-radius: 50%;
     color: var(--el-color-success);
@@ -191,9 +189,6 @@ function previewImage(id: string): void {
   }
 
   .item-image {
-    position: relative;
-    z-index: 5;
-
     .el-image {
       width: 100%;
       aspect-ratio: 16/9;
@@ -208,18 +203,6 @@ function previewImage(id: string): void {
           opacity: 0.8;
         }
       }
-    }
-
-    .svg-icon {
-      position: absolute;
-      right: 2px;
-      bottom: 2px;
-      z-index: 1;
-      border-radius: 8px 8px 2px 8px;
-      background-color: #fff;
-      color: var(--color-primary);
-      width: 14px;
-      pointer-events: none;
     }
   }
 

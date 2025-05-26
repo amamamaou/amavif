@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { selectDialog } from '@/libs/utility'
-import convertImage from '@/libs/convert'
+import { selectDialog } from '@/libs/utils'
 import useImageStore from '@/store/image'
-
-import { ElNotification } from 'element-plus'
 
 const image = useImageStore()
 
@@ -12,6 +9,7 @@ const format = computed<ImageFormat>({
   get() { return image.format },
   set(value) { image.setFormat(value) },
 })
+
 const quality = computed<number>({
   get() { return image.quality },
   set(value) { image.setQuality(value) },
@@ -28,25 +26,6 @@ const tooltipContent = computed<string>(() => {
 async function selectOutput(): Promise<void> {
   const path = await selectDialog(image.output)
   image.setOutput(path)
-}
-
-/** 変換処理 */
-async function convert(): Promise<void> {
-  const result = await convertImage()
-
-  if (result) {
-    ElNotification({
-      title: 'Completed',
-      message: 'All done! Your images are ready.',
-      type: 'success',
-    })
-  } else {
-    ElNotification({
-      title: 'Failed',
-      message: 'Oops! Couldn’t convert the images.',
-      type: 'error',
-    })
-  }
 }
 </script>
 
@@ -100,7 +79,7 @@ async function convert(): Promise<void> {
           color="var(--color-primary)"
           class="convert-button"
           :disabled="!image.canConvert"
-          @click="convert"
+          @click="image.convert"
         >
           Convert
         </el-button>
