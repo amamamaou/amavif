@@ -94,6 +94,7 @@ async function selectOutput(): Promise<void> {
   grid-template-columns: max(20%, 150px) 1fr 20%;
   grid-auto-rows: 32px;
   gap: 8px 20px;
+  width: min(100%, 900px);
 
   .el-form-item {
     --el-form-label-font-size: 1.3rem;

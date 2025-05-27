@@ -65,8 +65,9 @@ listen('tauri://drag-drop', (event) => {
 .el-footer {
   --el-footer-height: 96px;
 
-  display: grid;
+  display: flex;
   align-items: center;
+  justify-content: center;
   border-top: 1px solid var(--el-border-color);
 }
 </style>

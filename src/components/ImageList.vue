@@ -155,7 +155,11 @@ function previewImage(id: string): void {
   list-style: none;
   padding: 0 20px;
 
-  + .image-list .list-item {
+  &:last-child .list-item:last-child {
+    box-shadow: 0 1px 0 0 var(--el-border-color);
+  }
+
+  &:nth-child(2) .list-item {
     border-top: 1px solid var(--el-border-color);
   }
 
