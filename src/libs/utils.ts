@@ -62,9 +62,16 @@ export async function openFileExplorer(path: string): Promise<void> {
 /** バイト数を変換 */
 export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 byte'
+
   const units = ['bytes', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  const value = bytes / 1024 ** i
+  let i = Math.floor(Math.log(bytes) / Math.log(1024))
+  let value = bytes / 1024 ** i
+
+  if (value > 999) {
+    value /= 1024
+    i++
+  }
+
   return `${value.toFixed(Math.min(i, 2))} ${units[i]}`
 }
 
