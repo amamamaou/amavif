@@ -1,6 +1,7 @@
 import { h, type VNode } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
+import { ElNotification } from 'element-plus'
 
 /** 許可するMIMEタイプ */
 const allowInputMIMEType: AllowInputMIMEType[] = ['image/jpeg', 'image/png', 'image/webp']
@@ -39,7 +40,23 @@ export async function selectDialog(defaultPath: string): Promise<string> {
 
 /** 指定したパスを開く */
 export async function openFileExplorer(path: string): Promise<void> {
-  return invoke<void>('open_file_explorer', { path })
+  if (!path) return
+
+  try {
+    await invoke<void>('open_file_explorer', { path })
+  } catch (error) {
+    let message = ''
+
+    if (error instanceof Error) {
+      message = error.message
+    } else if (typeof error === 'string') {
+      message = error
+    }
+
+    if (message) {
+      ElNotification({ title: 'Error', message, type: 'error' })
+    }
+  }
 }
 
 /** バイト数を変換 */

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { openDialog, openFileExplorer, svgRender } from '@/libs/utils'
 import useImageStore from '@/store/image'
-
-import { ElNotification } from 'element-plus'
 import { mdiFileImagePlus, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
 
 const image = useImageStore()
@@ -11,21 +9,6 @@ const image = useImageStore()
 async function addImages(): Promise<void> {
   const paths = await openDialog()
   image.addImages(paths)
-}
-
-/** 出力先を開く */
-function openOutputFolder(): void {
-  if (image.output) {
-    openFileExplorer(image.output).catch((error) => {
-      if (typeof error == 'string') {
-        ElNotification({
-          title: 'Error',
-          message: error,
-          type: 'error',
-        })
-      }
-    })
-  }
 }
 </script>
 
@@ -54,7 +37,7 @@ function openOutputFolder(): void {
       :icon="svgRender(mdiFolderOpen)"
       :disabled="image.output === ''"
       color="var(--color-primary)"
-      @click="openOutputFolder"
+      @click="openFileExplorer(image.output)"
     >
       Open Output
     </el-button>
