@@ -1,21 +1,5 @@
 @import "./variable.css";
 
-@font-face {
-  font-family: "Noto Sans JP";
-  src: url("/fonts/NotoSansJP-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Noto Sans JP";
-  src: url("/fonts/NotoSansJP-Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -36,7 +20,7 @@ html {
 }
 
 body {
-  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", "Segoe UI", sans-serif;
+  font-family: -apple-system, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Segoe UI", "Noto Sans JP", "Meiryo", sans-serif;
   color: var(--color-text);
   background-color: #fff;
   cursor: default;
