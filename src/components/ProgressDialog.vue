@@ -15,7 +15,7 @@ const percentage = computed<number>(() => {
 const dialogText = computed<string>(() => {
   if (image.status === 'loading') return 'Loading images...'
   if (image.status === 'converting') return 'Converting images...'
-  return ''
+  return 'Done'
 })
 </script>
 

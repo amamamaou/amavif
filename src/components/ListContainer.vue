@@ -28,6 +28,9 @@ const image = useImageStore()
 }
 
 .el-scrollbar {
+  --el-scrollbar-opacity: 0.5;
+  --el-scrollbar-hover-opacity: 0.8;
+
   min-height: 0;
 }
 </style>

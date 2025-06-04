@@ -62,7 +62,7 @@ const useImageStore = defineStore('image', {
     convertImages,
 
     /** 処理完了 */
-    done() {
+    done(): void {
       this.status = 'idle'
     },
 
