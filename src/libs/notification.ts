@@ -1,19 +1,16 @@
-import { ElNotification } from 'element-plus'
 import { sleep } from '@/libs/utils'
 
 /** 変換結果の通知 */
 export function convertNotification(result: boolean): void {
   if (result) {
-    ElNotification({
+    ElNotification.success({
       title: 'Completed',
       message: 'All done! Your images are ready.',
-      type: 'success',
     })
   } else {
-    ElNotification({
+    ElNotification.error({
       title: 'Failed',
       message: 'Oops! Couldn’t convert the images.',
-      type: 'error',
     })
   }
 }
@@ -22,10 +19,9 @@ export function convertNotification(result: boolean): void {
 export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // 重複したとき
   if (flags.duplicate) {
-    ElNotification({
+    ElNotification.info({
       title: 'Duplicate Images Found',
       message: 'Looks like those images were already in the list!',
-      type: 'info',
     })
 
     await sleep(10)
@@ -33,10 +29,9 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
 
   // 複数回層のディレクトリが見つかったとき
   if (flags.directory) {
-    ElNotification({
+    ElNotification.info({
       title: 'Too Many Folder Levels',
       message: 'Image loading only works one level deep in folders. This one was skipped.',
-      type: 'info',
     })
 
     await sleep(10)
@@ -44,10 +39,9 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
 
   // サポートしないファイル
   if (flags.unsupported) {
-    ElNotification({
+    ElNotification.warning({
       title: 'Unsupported Images Found',
       message: 'Some images weren’t added because their format isn’t supported.',
-      type: 'warning',
     })
   }
 }

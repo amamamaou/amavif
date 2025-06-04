@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { listen } from '@tauri-apps/api/event'
 import useImageStore from '@/store/image'
 

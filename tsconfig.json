@@ -24,7 +24,8 @@
     "paths": { "@/*": ["src/*"] },
     "types": [
       "vite/client",
-      "element-plus/global"
+      "element-plus/global",
+      "./src/auto-imports.d.ts"
     ]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],

@@ -35,3 +35,9 @@ img {
 input, textarea, select, button {
   font-family: inherit;
 }
+
+/* overlay */
+.el-overlay,
+.el-image-viewer__wrapper {
+  backdrop-filter: blur(5px);
+}

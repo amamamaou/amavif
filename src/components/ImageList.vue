@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { getFormatName, formatBytes, svgRender } from '@/libs/utils'
 import useImageStore from '@/store/image'
-
-import { ElNotification } from 'element-plus'
 import { mdiArrowRight, mdiCheckCircle, mdiLoupe, mdiTrashCanOutline } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 
@@ -21,10 +19,9 @@ const image = useImageStore()
 function imageErrorNotice(uuid: string, fileName: string): void {
   image.removeItem(uuid)
 
-  ElNotification({
+  ElNotification.error({
     title: 'Unsupported Image File',
     message: `Oops! '${fileName}' isn’t a supported image.`,
-    type: 'error',
   })
 }
 

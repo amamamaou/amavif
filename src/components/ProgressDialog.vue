@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import useImageStore from '@/store/image'
 
 const image = useImageStore()
