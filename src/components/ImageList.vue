@@ -141,7 +141,7 @@ function previewImage(id: string): void {
             :icon="TrashIcon"
             circle
             plain
-            :disabled="image.isProcessing"
+            :disabled="image.isLocked"
             @click="image.removeItem(uuid)"
           />
         </el-tooltip>

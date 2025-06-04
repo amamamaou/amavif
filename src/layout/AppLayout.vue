@@ -6,8 +6,7 @@ import useImageStore from '@/store/image'
 import MainLayout from '@/layout/MainLayout.vue'
 import FooterControl from '@/components/FooterControl.vue'
 import DropOverlay from '@/components/DropOverlay.vue'
-import LoadingDialog from '@/components/LoadingDialog.vue'
-import ProcessingDialog from '@/components/ProcessingDialog.vue'
+import ProgressDialog from '@/components/ProgressDialog.vue'
 
 const image = useImageStore()
 const isDropEnter = ref<boolean>(false)
@@ -46,11 +45,8 @@ listen('tauri://drag-drop', (event) => {
   <!-- ドラッグ&ドロップ時のオーバーレイ -->
   <DropOverlay :is-drop-enter="isDropEnter" />
 
-  <!-- 読込中ダイアログ -->
-  <LoadingDialog />
-
-  <!-- 処理中ダイアログ -->
-  <ProcessingDialog />
+  <!-- 処理ダイアログ -->
+  <ProgressDialog />
 </template>
 
 <style scoped>

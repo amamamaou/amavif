@@ -31,8 +31,7 @@ declare module 'vue' {
     ListContainer: typeof import('./src/components/ListContainer.vue')['default']
     ListHeader: typeof import('./src/components/ListHeader.vue')['default']
     ListStatus: typeof import('./src/components/ListStatus.vue')['default']
-    LoadingDialog: typeof import('./src/components/LoadingDialog.vue')['default']
-    ProcessingDialog: typeof import('./src/components/ProcessingDialog.vue')['default']
+    ProgressDialog: typeof import('./src/components/ProgressDialog.vue')['default']
     SvgIcon: typeof import('./src/components/SvgIcon.vue')['default']
   }
 }

@@ -7,6 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tauri::Emitter;
+use uuid::Uuid;
 use webp::Encoder as WebpEncoder;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -17,6 +18,7 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             is_directory,
+            generate_uuid,
             get_mime_type,
             get_file_size,
             get_image_files_in_dir,
@@ -33,7 +35,7 @@ pub fn run() {
 struct FileInfo {
     uuid: String,
     path: String,
-    file_name: String,
+    name: String,
     directory: String,
 }
 
@@ -41,6 +43,14 @@ struct FileInfo {
 #[tauri::command]
 fn is_directory(path: String) -> bool {
     Path::new(&path).is_dir()
+}
+
+/// ファイルパスからUUIDを生成する
+#[tauri::command]
+fn generate_uuid(path: String) -> String {
+    let ns = Uuid::NAMESPACE_URL;
+    let uuid = Uuid::new_v5(&ns, path.as_bytes());
+    uuid.to_string()
 }
 
 /// ファイルの MIME Type を取得する
@@ -131,8 +141,10 @@ fn encode_to_avif(path: String, output_path: &PathBuf, quality: u8) -> ImageResu
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct ConvertProgress {
+struct ConvertedData {
     uuid: String,
+    path: PathBuf,
+    file_size: u64,
 }
 
 /// 画像変換処理
@@ -143,7 +155,7 @@ async fn convert_images(
     format: String,
     quality: u8,
     output: String,
-) -> Result<Vec<(String, PathBuf)>, tauri::Error> {
+) -> Result<Vec<ConvertedData>, tauri::Error> {
     let output_dir = PathBuf::from(&output);
 
     // もしディレクトリが存在しない場合は作る
@@ -168,7 +180,7 @@ async fn convert_images(
             }
 
             // ファイル名を結合する
-            output_path = output_path.join(&item.file_name);
+            output_path = output_path.join(&item.name);
 
             if format == String::from("webp") {
                 encode_to_webp(item.path.clone(), &output_path, quality).ok()?;
@@ -176,13 +188,19 @@ async fn convert_images(
                 encode_to_avif(item.path.clone(), &output_path, quality).ok()?;
             }
 
-            // 進行状況を通知
-            app.emit(
-                "progress",
-                ConvertProgress { uuid: item.uuid.clone() },
-            ).ok()?;
+            // ファイルサイズ計算
+            let file_size = fs::metadata(&output_path)
+                .map(|meta| meta.len())
+                .unwrap_or(0);
 
-            Some((item.uuid.clone(), output_path))
+            // 進行状況を通知
+            app.emit("progress", {}).ok()?;
+
+            Some(ConvertedData {
+                uuid: item.uuid.clone(),
+                path: output_path,
+                file_size,
+            })
         })
         .collect::<Vec<_>>();
 
@@ -191,10 +209,10 @@ async fn convert_images(
 
 /// 変換したファイルが存在するか確認
 #[tauri::command]
-fn check_existing_files(
+async fn check_existing_files(
     file_data: Vec<FileInfo>,
     output: String,
-) -> Vec<(String, PathBuf)> {
+) -> Vec<ConvertedData> {
     let output_dir = PathBuf::from(&output);
 
     file_data
@@ -208,10 +226,19 @@ fn check_existing_files(
             }
 
             // ファイル名を結合する
-            output_path = output_path.join(item.file_name);
+            output_path = output_path.join(item.name);
 
             if output_path.is_file() {
-                Some((item.uuid, output_path))
+                // ファイルサイズ計算
+                let file_size = fs::metadata(&output_path)
+                    .map(|meta| meta.len())
+                    .unwrap_or(0);
+
+                Some(ConvertedData {
+                    uuid: item.uuid,
+                    path: output_path,
+                    file_size,
+                })
             } else {
                 None
             }

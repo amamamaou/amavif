@@ -69,7 +69,7 @@ async function addImages(): Promise<void> {
   .text {
     margin-right: 8px;
     font-size: 1.6rem;
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .button {

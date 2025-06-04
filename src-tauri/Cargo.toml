@@ -1,6 +1,6 @@
 [package]
 name = "Amavif"
-version = "0.5.4"
+version = "0.6.0"
 description = "Simple tool for converting images to WebP/AVIF."
 authors = ["Sachino Totome <@amamamaou>"]
 edition = "2021"
@@ -31,4 +31,5 @@ tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2.2.1"
 tauri-plugin-store = "2.2"
+uuid = { version = "1", features = ["v5"] }
 webp = "0.2"

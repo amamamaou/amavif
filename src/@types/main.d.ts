@@ -27,19 +27,24 @@ interface FileInfo {
 /** UUIDによる画像情報のマップ */
 type FileInfoMap = Map<string, FileInfo>
 
-/** 変換情報Store */
-interface ImagesStore {
+/** 処理ステート */
+type ProcessingStatus = 'idle' | 'loading' | 'converting'
+
+/** 処理データ */
+interface ProgressData {
+  count: number;
+  total: number;
+}
+
+/** 画像ストアState */
+interface ImagesState {
   standby: FileInfoMap;
   complete: FileInfoMap;
   format: ImageFormat;
   quality: number;
   output: string;
-  isProcessing: boolean;
-  isLoading: boolean;
-  load: {
-    total: number;
-    count: number;
-  };
+  status: ProcessingStatus;
+  progress: ProgressData;
 }
 
 /** 画像ファイル読み込み時のお知らせフラグ */

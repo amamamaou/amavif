@@ -7,15 +7,14 @@ const store = new LazyStore('settings.json')
 
 /** 変換情報ストア */
 const useImageStore = defineStore('image', {
-  state: (): ImagesStore => ({
+  state: (): ImagesState => ({
     standby: new Map(),
     complete: new Map(),
     format: 'webp',
     quality: 80,
     output: '',
-    isProcessing: false,
-    isLoading: false,
-    load: { total: 0, count: 0 },
+    status: 'idle',
+    progress: { count: 0, total: 0 },
   }),
 
   getters: {
@@ -31,26 +30,27 @@ const useImageStore = defineStore('image', {
 
     /** 操作ができない状態か */
     isLocked(state): boolean {
-      return state.isLoading || state.isProcessing
+      return state.status !== 'idle'
     },
 
     /** 変換前のトータルファイルサイズ */
     standbySize(state): number {
       let total = 0
-      for (const { size: { before } } of state.standby.values()) {
-        total += before
+      for (const { size } of state.standby.values()) {
+        total += size.before
       }
       return total
     },
 
     /** 変換後のトータルファイルサイズデータ */
     convertedSize(state): FileSizeData {
-      const data: FileSizeData = { before: 0, after: 0 }
-      for (const { size: { before, after } } of state.complete.values()) {
-        data.before += before
-        data.after += after
+      let before = 0
+      let after = 0
+      for (const { size } of state.complete.values()) {
+        before += size.before
+        after += size.after
       }
-      return data
+      return { before, after }
     },
   },
 
@@ -60,6 +60,18 @@ const useImageStore = defineStore('image', {
 
     /** 画像を変換する */
     convertImages,
+
+    /** 処理完了 */
+    done() {
+      this.status = 'idle'
+    },
+
+    /** 処理ステート初期化 */
+    initProgress(status: ProcessingStatus, total: number = 0): void {
+      this.status = status
+      this.progress.total = total
+      this.progress.count = 0
+    },
 
     /** 設定を読み込む */
     async loadSettings(): Promise<void> {

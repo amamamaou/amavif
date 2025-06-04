@@ -1,31 +1,27 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue'
-import { listen } from '@tauri-apps/api/event'
+import { computed } from 'vue'
 import useImageStore from '@/store/image'
 
 const image = useImageStore()
-const count = ref<number>(0)
 
+/** 進捗率 */
 const percentage = computed<number>(() => {
-  if (image.standby.size === 0) return 100
-  return Math.min(Math.floor(count.value / image.standby.size * 100), 100)
+  const { total, count } = image.progress
+  if (total === 0) return 0
+  return Math.min(Math.floor(count / total * 100), 100)
 })
 
-// 値のリセット処理
-watchEffect(() => {
-  if (image.isProcessing) count.value = 0
-})
-
-// 進捗処理
-listen('progress', (event) => {
-  const uuid = (event.payload as { uuid: string }).uuid
-  if (image.standby.has(uuid)) count.value++
+/** ダイアログテキスト */
+const dialogText = computed<string>(() => {
+  if (image.status === 'loading') return 'Loading images...'
+  if (image.status === 'converting') return 'Converting images...'
+  return ''
 })
 </script>
 
 <template>
   <el-dialog
-    v-model="image.isProcessing"
+    :model-value="image.isLocked"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :show-close="false"
@@ -51,16 +47,16 @@ listen('progress', (event) => {
         color="var(--color-primary)"
       />
 
-      <div class="processing-text">Converting images...</div>
+      <div class="dialog-text">{{ dialogText }}</div>
     </div>
   </el-dialog>
 </template>
 
 <style scoped>
-.processing-text {
+.dialog-text {
   margin-block: 24px;
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 600;
   text-align: center;
 }
 </style>

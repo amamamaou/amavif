@@ -106,7 +106,7 @@ async function selectOutput(): Promise<void> {
       width: 60px;
       padding-right: 0;
       color: var(--color-text);
-      font-weight: 700;
+      font-weight: 600;
     }
   }
 

@@ -70,7 +70,7 @@ const size = computed<FileSizeData>(() => image.convertedSize)
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 700;
+    font-weight: 600;
 
     dt::after {
         content: ":";
