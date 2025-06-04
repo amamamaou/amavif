@@ -31,9 +31,9 @@ async function collectPaths(
   let hasSubDir = false
 
   for (const path of paths) {
+    // ディレクトリかどうか
     const isDirectory = await invoke<boolean>('is_directory', { path })
 
-    // ディレクトリかどうか
     if (isDirectory) {
       // 再帰的処理は行わない
       if (directory) {
@@ -171,7 +171,6 @@ export async function convertImages(): Promise<void> {
     })
 
     image.standby.delete(uuid)
-    image.progress.count++
   }
 
   await sleep(400)
