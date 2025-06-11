@@ -26,8 +26,8 @@
     "security": {
       "csp": {
         "default-src": "'self'",
-        "img-src": "'self' asset:",
-        "connect-src": "ipc:"
+        "img-src": "'self' asset: http://asset.localhost",
+        "connect-src": "ipc: http://ipc.localhost"
       },
       "capabilities": ["main-capability"],
       "assetProtocol": {
