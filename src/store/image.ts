@@ -10,6 +10,7 @@ const useImageStore = defineStore('image', {
   state: (): ImagesState => ({
     standby: new Map(),
     complete: new Map(),
+    backup: new Map(),
     format: 'webp',
     quality: 80,
     output: '',
@@ -88,12 +89,21 @@ const useImageStore = defineStore('image', {
     removeItem(uuid: string): void {
       this.standby.delete(uuid)
       this.complete.delete(uuid)
+      this.backup.delete(uuid)
     },
 
     /** すべての画像を取り除く */
     removeItems(): void {
       this.standby.clear()
       this.complete.clear()
+      this.backup.clear()
+    },
+
+    /** 変換をやり直す */
+    restore(): void {
+      this.standby = new Map([...this.backup, ...this.standby])
+      this.complete.clear()
+      this.backup.clear()
     },
 
     /** 形式を保存する */

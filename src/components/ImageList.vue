@@ -20,7 +20,7 @@ function imageErrorNotice(uuid: string, fileName: string): void {
   image.removeItem(uuid)
 
   ElNotification.error({
-    title: 'Unsupported Image File',
+    title: 'Unsupported image file',
     message: `Oops! '${fileName}' isn’t a supported image.`,
   })
 }

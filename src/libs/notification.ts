@@ -20,7 +20,7 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // 重複したとき
   if (flags.duplicate) {
     ElNotification.info({
-      title: 'Duplicate Images Found',
+      title: 'Duplicate images found',
       message: 'Looks like those images were already in the list!',
     })
 
@@ -30,7 +30,7 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // 複数回層のディレクトリが見つかったとき
   if (flags.directory) {
     ElNotification.info({
-      title: 'Too Many Folder Levels',
+      title: 'Too many folder levels',
       message: 'Image loading only works one level deep in folders. This one was skipped.',
     })
 
@@ -40,8 +40,18 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // サポートしないファイル
   if (flags.unsupported) {
     ElNotification.warning({
-      title: 'Unsupported Images Found',
+      title: 'Unsupported images found',
       message: 'Some images weren’t added because their format isn’t supported.',
+    })
+
+    await sleep(10)
+  }
+
+  // 結果的に0件だった場合
+  if (flags.empty) {
+    ElNotification.info({
+      title: 'No image files found',
+      message: 'No images were found that can be loaded.',
     })
   }
 }

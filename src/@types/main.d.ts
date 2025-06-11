@@ -40,6 +40,7 @@ interface ProgressData {
 interface ImagesState {
   standby: FileInfoMap;
   complete: FileInfoMap;
+  backup: FileInfoMap;
   format: ImageFormat;
   quality: number;
   output: string;
@@ -49,7 +50,8 @@ interface ImagesState {
 
 /** 画像ファイル読み込み時のお知らせフラグ */
 interface FileLoadFlags {
-  directory: boolean;
-  duplicate: boolean;
-  unsupported: boolean;
+  empty?: boolean;
+  directory?: boolean;
+  duplicate?: boolean;
+  unsupported?: boolean;
 }

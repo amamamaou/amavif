@@ -60,7 +60,10 @@ async function collectPaths(
 
 /** 画像ファイルを追加する */
 export async function addImages(paths: string[]): Promise<void> {
-  if (paths.length === 0) return
+  if (paths.length === 0) {
+    loadNotification({ empty: true })
+    return
+  }
 
   const image = useImageStore()
   image.initProgress('loading')
@@ -71,9 +74,8 @@ export async function addImages(paths: string[]): Promise<void> {
 
   /** 通知フラグ */
   const flags: FileLoadFlags = {
+    empty: pathData.length === 0,
     directory: hasSubDir,
-    duplicate: false,
-    unsupported: false,
   }
 
   // パスから画像情報を取得する
@@ -169,7 +171,7 @@ export async function convertImages(): Promise<void> {
         after: fileSize,
       },
     })
-
+    image.backup.set(uuid, orig)
     image.standby.delete(uuid)
   }
 

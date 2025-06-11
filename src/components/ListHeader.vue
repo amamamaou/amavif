@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { openDialog, openFileExplorer, svgRender } from '@/libs/utils'
 import useImageStore from '@/store/image'
-import { mdiFileImagePlus, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
+import {
+  mdiArrowULeftTop,
+  mdiFileImagePlus,
+  mdiFolderOpen,
+  mdiTrashCanOutline,
+} from '@mdi/js'
 
 const image = useImageStore()
 
@@ -14,6 +19,17 @@ async function addImages(): Promise<void> {
 
 <template>
   <div class="list-header">
+    <el-button
+      v-if="image.backup.size > 0"
+      plain
+      :icon="svgRender(mdiArrowULeftTop)"
+      :disabled="image.isLocked"
+      color="var(--color-primary)"
+      @click="image.restore"
+    >
+      Convert Again
+    </el-button>
+
     <el-button
       :icon="svgRender(mdiFileImagePlus)"
       :disabled="image.isLocked"
@@ -52,8 +68,8 @@ async function addImages(): Promise<void> {
   border-bottom: 1px solid var(--el-border-color);
 
   .el-button {
-    &:not(.is-plain) {
-      font-weight: 700;
+    &:not(:last-child) {
+      font-weight: 600;
     }
 
     &:last-child {
