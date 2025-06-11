@@ -160,7 +160,7 @@ async fn convert_images(
 
     // もしディレクトリが存在しない場合は作る
     if !output_dir.is_dir() {
-        std::fs::create_dir_all(&output_dir)?;
+        fs::create_dir_all(&output_dir)?;
     }
 
     // rayonで並列処理を行う
@@ -175,7 +175,7 @@ async fn convert_images(
 
                 // もしディレクトリが存在しない場合は作る
                 if !output_path.is_dir() {
-                    std::fs::create_dir_all(&output_path).ok()?;
+                    fs::create_dir_all(&output_path).ok()?;
                 }
             }
 
