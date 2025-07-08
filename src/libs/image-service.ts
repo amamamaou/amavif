@@ -1,15 +1,15 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { basename } from '@tauri-apps/api/path'
+import { basename, sep } from '@tauri-apps/api/path'
 import { isAllowInputMIMEType, sleep } from '@/libs/utils'
 import { convertNotification, loadNotification, type FileLoadFlags } from '@/libs/notification'
 import useImageStore from '@/store/image'
 
-/** 整えられたパスデータ */
-interface CollectedPathData {
+/** パスデータ */
+interface PathData {
   uuid: string;
   path: string;
-  directory?: string;
+  dir: string[];
 }
 
 /** 変換データ */
@@ -17,45 +17,6 @@ interface ConvertedData {
   uuid: string,
   path: string,
   fileSize: number,
-}
-
-/** ディレクトリが含まれるパスを整える */
-async function collectPaths(
-  paths: string[],
-  directory?: string,
-): Promise<{
-  pathData: CollectedPathData[];
-  hasSubDir: boolean;
-}> {
-  const pathData: CollectedPathData[] = []
-  let hasSubDir = false
-
-  for (const path of paths) {
-    // ディレクトリかどうか
-    const isDirectory = await invoke<boolean>('is_directory', { path })
-
-    if (isDirectory) {
-      // 再帰的処理は行わない
-      if (directory) {
-        hasSubDir = true
-        continue
-      }
-
-      // 直下の画像ファイルを取得する
-      const newPaths = await invoke<string[]>('get_image_files_in_dir', { path })
-      const dirName = await basename(path)
-      const children = await collectPaths(newPaths, dirName)
-
-      if (children.hasSubDir) hasSubDir = true
-
-      pathData.push(...children.pathData)
-    } else {
-      const uuid = await invoke<string>('generate_uuid', { path })
-      pathData.push({ uuid, path, directory })
-    }
-  }
-
-  return { pathData, hasSubDir }
 }
 
 /** 画像ファイルを追加する */
@@ -68,18 +29,17 @@ export async function addImages(paths: string[]): Promise<void> {
   const image = useImageStore()
   image.initProgress('loading')
 
-  // ディレクトリが含まれる場合があるので先に整える
-  const { pathData, hasSubDir } = await collectPaths(paths)
+  // フォルダを含むパスから画像ファイルを抽出する
+  const pathData = await invoke<PathData[]>('collect_image_paths', { paths })
   image.progress.total = pathData.length
 
   /** 通知フラグ */
   const flags: FileLoadFlags = {
     empty: pathData.length === 0,
-    directory: hasSubDir,
   }
 
   // パスから画像情報を取得する
-  for (const { uuid, path, directory } of pathData) {
+  for (const { uuid, path, dir } of pathData) {
     // 重複しているか
     if (image.standby.has(uuid)) {
       flags.duplicate = true
@@ -100,9 +60,9 @@ export async function addImages(paths: string[]): Promise<void> {
 
       image.standby.set(uuid, {
         path,
-        fileName: (directory ? directory + '/' : '') + fileName,
+        fileName: [...dir, fileName].join(sep()),
         baseName: fileName.replace(/\.\w+$/, ''),
-        directory,
+        dir,
         mimeType,
         fileSrc: convertFileSrc(path),
         size: { before: fileSize, after: 0 },
@@ -129,9 +89,9 @@ export async function convertImages(): Promise<void> {
 
   /** Tauri側へ渡す値 */
   const fileData = [...image.standby.entries()]
-    .map(([uuid, { path, baseName, directory = '' }]) => {
+    .map(([uuid, { path, baseName, dir }]) => {
       const name = `${baseName}.${format}`
-      return { uuid, path, name, directory }
+      return { uuid, path, name, dir }
     })
 
   // 進捗処理イベント
@@ -158,12 +118,11 @@ export async function convertImages(): Promise<void> {
     const orig = image.standby.get(uuid)
     if (!orig) continue
 
-    const dirPath = orig.directory ? orig.directory + '/' : ''
-
     image.complete.set(uuid, {
       path,
-      fileName: `${dirPath}${orig.baseName}.${format}`,
+      fileName: [...orig.dir, `${orig.baseName}.${format}`].join(sep()),
       baseName: orig.baseName,
+      dir: orig.dir,
       mimeType: `image/${format}`,
       fileSrc: convertFileSrc(path),
       size: {

@@ -18,10 +18,9 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             is_directory,
-            generate_uuid,
             get_mime_type,
             get_file_size,
-            get_image_files_in_dir,
+            collect_image_paths,
             convert_images,
             check_existing_files,
             open_file_explorer,
@@ -30,27 +29,10 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-/// ファイル情報
-#[derive(Debug, Serialize, Deserialize)]
-struct FileInfo {
-    uuid: String,
-    path: String,
-    name: String,
-    directory: String,
-}
-
 /// ディレクトリか確認する
 #[tauri::command]
 fn is_directory(path: String) -> bool {
     Path::new(&path).is_dir()
-}
-
-/// ファイルパスからUUIDを生成する
-#[tauri::command]
-fn generate_uuid(path: String) -> String {
-    let ns = Uuid::NAMESPACE_URL;
-    let uuid = Uuid::new_v5(&ns, path.as_bytes());
-    uuid.to_string()
 }
 
 /// ファイルの MIME Type を取得する
@@ -74,34 +56,93 @@ fn get_file_size(path: String) -> u64 {
         .unwrap_or(0)
 }
 
-/// 対象とする画像の拡張子
-const IMAGE_EXTENSIONS: [&str; 4] = ["png", "jpg", "jpeg", "webp"];
+/// ファイルパスからUUIDを生成する
+fn generate_uuid(path: &String) -> String {
+    let ns = Uuid::NAMESPACE_URL;
+    let uuid = Uuid::new_v5(&ns, path.as_bytes());
+    uuid.to_string()
+}
 
-/// 指定したディレクトリの直下にある画像ファイルのパスを取得する
-#[tauri::command]
-fn get_image_files_in_dir(path: String) -> Vec<String> {
-    let dir_path = Path::new(&path);
-    let mut image_files = Vec::new();
+/// フロントエンドに返す画像のパスとディレクトリ情報を保持する構造体
+#[derive(Debug, Serialize, Deserialize)]
+struct PathData {
+    uuid: String,
+    path: String,
+    dir: Vec<String>,
+}
 
+/// 画像の拡張子を判定するヘルパー関数
+fn is_image_file(path: &Path) -> bool {
+    if let Some(ext) = path.extension() {
+        let ext_str = ext.to_string_lossy().to_lowercase();
+        matches!(ext_str.as_str(), "jpg" | "jpeg" | "png" | "webp")
+    } else {
+        false
+    }
+}
+
+/// ディレクトリを再帰的に走査し、画像ファイルとディレクトリ階層を収集する
+fn collect_image_paths_recursive(
+    current_path: &Path,
+    base_dirs: Vec<String>,
+    image_infos: &mut Vec<PathData>,
+) -> Result<(), String> {
     // ディレクトリ配下を取得
-    if let Ok(entries) = fs::read_dir(dir_path) {
-        for entry in entries.flatten() {
-            let path = entry.path();
+    for entry in fs::read_dir(current_path).map_err(|e| e.to_string())? {
+        let entry = entry.map_err(|e| e.to_string())?;
+        let path = entry.path();
 
-            if path.is_file() {
-                if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
-                    if IMAGE_EXTENSIONS.iter().any(|&e| e.eq_ignore_ascii_case(ext)) {
-                        // PathBuf → String へ変換
-                        if let Some(p) = path.to_str() {
-                            image_files.push(p.to_string());
-                        }
-                    }
-                }
+        if path.is_file() {
+            // 画像ファイルの場合がそのまま格納
+            if is_image_file(&path) {
+                let file_path = path.to_string_lossy().to_string();
+                image_infos.push(PathData {
+                    uuid: generate_uuid(&file_path),
+                    path: file_path,
+                    dir: base_dirs.clone(),
+                });
+            }
+        } else if path.is_dir() {
+            // ディレクトリの場合は再帰的に取得する
+            if let Some(dir_name_os) = path.file_name() {
+                let mut new_base_dirs = base_dirs.clone();
+                new_base_dirs.push(dir_name_os.to_string_lossy().to_string());
+                collect_image_paths_recursive(&path, new_base_dirs, image_infos)?;
+            }
+        }
+    }
+    Ok(())
+}
+
+/// パスを整える
+#[tauri::command]
+async fn collect_image_paths(paths: Vec<String>) -> Result<Vec<PathData>, String> {
+    let mut image_infos: Vec<PathData> = Vec::new();
+
+    for path_str in paths {
+        let path = PathBuf::from(&path_str);
+
+        if path.is_file() {
+            // 画像ファイルの場合がそのまま格納
+            if is_image_file(&path) {
+                let file_path = path.to_string_lossy().to_string();
+                image_infos.push(PathData {
+                    uuid: generate_uuid(&file_path),
+                    path: file_path,
+                    dir: Vec::new(),
+                });
+            }
+        } else if path.is_dir() {
+            // ディレクトリの場合は再帰的に取得する
+            if let Some(dir_name_os) = path.file_name() {
+                let mut base_dirs = Vec::new();
+                base_dirs.push(dir_name_os.to_string_lossy().to_string());
+                collect_image_paths_recursive(&path, base_dirs, &mut image_infos)?;
             }
         }
     }
 
-    image_files
+    Ok(image_infos)
 }
 
 /// WebP変換処理
@@ -139,6 +180,16 @@ fn encode_to_avif(path: String, output_path: &PathBuf, quality: u8) -> ImageResu
     Ok(())
 }
 
+/// ファイル情報
+#[derive(Debug, Serialize, Deserialize)]
+struct FileInfo {
+    uuid: String,
+    path: String,
+    name: String,
+    dir: Vec<String>,
+}
+
+/// 変換後データ
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ConvertedData {
@@ -170,8 +221,10 @@ async fn convert_images(
             let mut output_path = output_dir.clone();
 
             // ディレクトリ持ちの場合
-            if !item.directory.is_empty() {
-                output_path = output_path.join(&item.directory);
+            if !item.dir.is_empty() {
+                for d in &item.dir {
+                    output_path.push(d);
+                }
 
                 // もしディレクトリが存在しない場合は作る
                 if !output_path.is_dir() {
@@ -180,7 +233,7 @@ async fn convert_images(
             }
 
             // ファイル名を結合する
-            output_path = output_path.join(&item.name);
+            output_path.push(&item.name);
 
             if format == String::from("webp") {
                 encode_to_webp(item.path.clone(), &output_path, quality).ok()?;
@@ -221,12 +274,14 @@ async fn check_existing_files(
             let mut output_path = output_dir.clone();
 
             // ディレクトリ持ちの場合
-            if !item.directory.is_empty() {
-                output_path = output_path.join(item.directory);
+            if !item.dir.is_empty() {
+                for d in &item.dir {
+                    output_path.push(d);
+                }
             }
 
             // ファイル名を結合する
-            output_path = output_path.join(item.name);
+            output_path.push(item.name);
 
             if output_path.is_file() {
                 // ファイルサイズ計算

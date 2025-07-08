@@ -16,7 +16,7 @@ export namespace Amavif {
     path: string;
     fileName: string;
     baseName: string;
-    directory?: string;
+    dir: string[];
     mimeType: 'image/avif' | MIMEType;
     fileSrc: string;
     size: FileSize;

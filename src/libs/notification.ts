@@ -4,7 +4,6 @@ import { sleep } from '@/libs/utils'
 /** 画像ファイル読み込み時のお知らせフラグ */
 export interface FileLoadFlags {
   empty?: boolean;
-  directory?: boolean;
   duplicate?: boolean;
   unsupported?: boolean;
 }
@@ -31,16 +30,6 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
     ElNotification.info({
       title: t('noti.duplicate.title'),
       message: t('noti.duplicate.message'),
-    })
-
-    await sleep(10)
-  }
-
-  // 複数回層のディレクトリが見つかったとき
-  if (flags.directory) {
-    ElNotification.info({
-      title: t('noti.directory.title'),
-      message: t('noti.directory.message'),
     })
 
     await sleep(10)
