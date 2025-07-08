@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import useImageStore from '@/store/image'
 import DropZone from '@/components/DropZone.vue'
 import ListContainer from '@/components/ListContainer.vue'
 

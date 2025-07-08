@@ -2,6 +2,24 @@ import { defineStore } from 'pinia'
 import { LazyStore } from '@tauri-apps/plugin-store'
 import { addImages, convertImages } from '@/libs/image-service'
 
+/** 処理ステート */
+export type ProcessingStatus = 'idle' | 'loading' | 'converting'
+
+/** 画像ストアステート */
+export interface ImagesState {
+  standby: Amavif.InfoMap;
+  complete: Amavif.InfoMap;
+  backup: Amavif.InfoMap;
+  format: Amavif.Format;
+  quality: number;
+  output: string;
+  status: ProcessingStatus;
+  progress: {
+    count: number;
+    total: number;
+  };
+}
+
 /** 設定ファイルStore */
 const store = new LazyStore('settings.json')
 
@@ -44,7 +62,7 @@ const useImageStore = defineStore('image', {
     },
 
     /** 変換後のトータルファイルサイズデータ */
-    convertedSize(state): FileSizeData {
+    convertedSize(state): Amavif.FileSize {
       let before = 0
       let after = 0
       for (const { size } of state.complete.values()) {
@@ -76,7 +94,7 @@ const useImageStore = defineStore('image', {
 
     /** 設定を読み込む */
     async loadSettings(): Promise<void> {
-      const format = await store.get<ImageFormat>('format')
+      const format = await store.get<Amavif.Format>('format')
       const quality = await store.get<number>('quality')
       const output = await store.get<string>('output')
 
@@ -107,7 +125,7 @@ const useImageStore = defineStore('image', {
     },
 
     /** 形式を保存する */
-    async setFormat(format: ImageFormat): Promise<void> {
+    async setFormat(format: Amavif.Format): Promise<void> {
       this.format = format
       await store.set('format', format)
     },

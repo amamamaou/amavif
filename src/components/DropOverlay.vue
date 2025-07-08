@@ -3,6 +3,8 @@ import { mdiFileImagePlus } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 
 defineProps<{ isDropEnter: boolean }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -11,12 +13,20 @@ defineProps<{ isDropEnter: boolean }>()
       <aside v-if="isDropEnter" class="drop-overlay">
         <div class="drop-message">
           <SvgIcon :path="mdiFileImagePlus" class="icon" />
-          <p class="text">Drop your images here!</p>
+          <p class="text">{{ t('drop-text') }}</p>
         </div>
       </aside>
     </Transition>
   </Teleport>
 </template>
+
+<i18n lang="yaml">
+en:
+  drop-text: Drop your images of folders here!
+
+ja:
+  drop-text: ここに画像またはフォルダをドラッグ＆ドロップ
+</i18n>
 
 <style scope>
 .drop-overlay {

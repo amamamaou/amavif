@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import useImageStore from '@/store/image'
 import ListHeader from '@/components/ListHeader.vue'
 import ImageList from '@/components/ImageList.vue'
 import ListStatus from '@/components/ListStatus.vue'

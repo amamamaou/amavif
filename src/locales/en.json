@@ -1,0 +1,32 @@
+{
+  "dialog": {
+    "select": "Select Files",
+    "output": "Select Output"
+  },
+  "noti": {
+    "success": {
+      "title": "Completed",
+      "message": "All done! Your images are ready."
+    },
+    "failed": {
+      "title": "Failed",
+      "message": "Oops! Couldn’t convert the images."
+    },
+    "duplicate": {
+      "title": "Duplicate images found",
+      "message": "Looks like those images were already in the list!"
+    },
+    "directory": {
+      "title": "Too many folder levels",
+      "message": "Image loading only works one level deep in folders. This one was skipped."
+    },
+    "unsupported": {
+      "title": "Unsupported images found",
+      "message": "Some images weren’t added because their format isn’t supported."
+    },
+    "empty": {
+      "title": "No image files found",
+      "message": "No images were found that can be loaded."
+    }
+  }
+}

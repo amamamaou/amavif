@@ -15,7 +15,7 @@
         "title": "Amavif",
         "width": 800,
         "height": 880,
-        "minWidth": 680,
+        "minWidth": 700,
         "minHeight": 640,
         "resizable": true,
         "fullscreen": false,

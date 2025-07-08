@@ -1,19 +1,20 @@
 import { h, type VNode } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
+import { t } from '@/i18n'
 
 /** 許可するMIMEタイプ */
-const allowInputMIMEType: AllowInputMIMEType[] = ['image/jpeg', 'image/png', 'image/webp']
+const allowInputMIMEType: Amavif.MIMEType[] = ['image/jpeg', 'image/png', 'image/webp']
 
 /** 許可するMIMEタイプかどうか */
-export function isAllowInputMIMEType(mime: string): mime is AllowInputMIMEType {
+export function isAllowInputMIMEType(mime: string): mime is Amavif.MIMEType {
   return allowInputMIMEType.some(v => v === mime)
 }
 
 /** 画像選択ダイアログを開く */
 export async function openDialog(): Promise<string[]> {
   const paths = await open({
-    title: 'Select Files',
+    title: t('dialog.select'),
     multiple: true,
     directory: false,
     canCreateDirectories: false,
@@ -30,7 +31,7 @@ export async function openDialog(): Promise<string[]> {
 /** 出力先選択ダイアログを開く */
 export async function selectDialog(defaultPath: string): Promise<string> {
   const path = await open({
-    title: 'Select Output',
+    title: t('dialog.output'),
     directory: true,
     defaultPath: defaultPath || undefined,
   })

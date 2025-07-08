@@ -2,7 +2,7 @@ import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { basename } from '@tauri-apps/api/path'
 import { isAllowInputMIMEType, sleep } from '@/libs/utils'
-import { convertNotification, loadNotification } from '@/libs/notification'
+import { convertNotification, loadNotification, type FileLoadFlags } from '@/libs/notification'
 import useImageStore from '@/store/image'
 
 /** 整えられたパスデータ */

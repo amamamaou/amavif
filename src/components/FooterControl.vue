@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { selectDialog } from '@/libs/utils'
-import useImageStore from '@/store/image'
 
+const { t } = useI18n()
 const image = useImageStore()
 
-const format = computed<ImageFormat>({
+const format = computed<Amavif.Format>({
   get() { return image.format },
   set(value) { image.setFormat(value) },
 })
@@ -16,8 +16,8 @@ const quality = computed<number>({
 
 /** ツールチップメッセージ */
 const tooltipContent = computed<string>(() => {
-  if (image.standby.size === 0) return 'No images selected'
-  if (image.output === '') return 'Select output folder'
+  if (image.standby.size === 0) return t('tooltip.image')
+  if (image.output === '') return t('tooltip.output')
   return ''
 })
 
@@ -34,14 +34,20 @@ async function selectOutput(): Promise<void> {
     label-position="left"
     :disabled="image.isLocked"
   >
-    <el-form-item label="Format" class="item-format">
+    <el-form-item
+      :label="t('label.format')"
+      class="item-format"
+    >
       <el-select v-model="format" class="format-select">
-        <el-option label="WebP" value="webp" />
-        <el-option label="AVIF" value="avif" />
+        <el-option value="webp" label="WebP" />
+        <el-option value="avif" label="AVIF" />
       </el-select>
     </el-form-item>
 
-    <el-form-item label="Quality" class="item-quality">
+    <el-form-item
+      :label="t('label.quality')"
+      class="item-quality"
+    >
       <el-slider
         v-model="quality"
         show-input
@@ -49,19 +55,22 @@ async function selectOutput(): Promise<void> {
       />
     </el-form-item>
 
-    <el-form-item label="Output" class="item-output">
+    <el-form-item
+      :label="t('label.output')"
+      class="item-output"
+    >
       <el-button
         plain
         color="var(--color-primary)"
         class="select-button"
         @click="selectOutput"
       >
-        Select
+        {{ t('button.output') }}
       </el-button>
 
       <el-input
         :value="image.output"
-        placeholder="Plese Select..."
+        :placeholder="t('placeholder')"
         readonly
         @click="selectOutput"
       />
@@ -80,12 +89,40 @@ async function selectOutput(): Promise<void> {
           :disabled="!image.canConvert"
           @click="image.convertImages"
         >
-          Convert
+          {{ t('button.convert') }}
         </el-button>
       </el-tooltip>
     </el-form-item>
   </el-form>
 </template>
+
+<i18n lang="yaml">
+en:
+  placeholder: Plese Select...
+  button:
+    convert: Convert
+    output: Select
+  label:
+    format: Format
+    quality: Quality
+    output: Output
+  tooltip:
+    image: No images selected
+    output: Select output folder
+
+ja:
+  placeholder: 出力先を選択してください
+  button:
+    convert: 変換開始
+    output: 選択
+  label:
+    format: 画像形式
+    quality: 画質
+    output: 出力先
+  tooltip:
+    image: 変換する画像がありません
+    output: 出力先を選択してください
+</i18n>
 
 <style scoped>
 .el-form {

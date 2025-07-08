@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { openDialog, openFileExplorer, svgRender } from '@/libs/utils'
-import useImageStore from '@/store/image'
-import {
-  mdiArrowULeftTop,
-  mdiFileImagePlus,
-  mdiFolderOpen,
-  mdiTrashCanOutline,
-} from '@mdi/js'
+import { openFileExplorer, svgRender } from '@/libs/utils'
+import AddImages from '@/components/AddImages.vue'
+import LocaleSelect from '@/components/LocaleSelect.vue'
+import { mdiArrowULeftTop, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
 
+const { t } = useI18n()
 const image = useImageStore()
-
-/** ダイアログを開いてファイル追加する */
-async function addImages(): Promise<void> {
-  const paths = await openDialog()
-  image.addImages(paths)
-}
 </script>
 
 <template>
@@ -27,17 +18,10 @@ async function addImages(): Promise<void> {
       color="var(--color-primary)"
       @click="image.restore"
     >
-      Convert Again
+      {{ t('button.again') }}
     </el-button>
 
-    <el-button
-      :icon="svgRender(mdiFileImagePlus)"
-      :disabled="image.isLocked"
-      color="var(--color-primary)"
-      @click="addImages"
-    >
-      Add Images
-    </el-button>
+    <AddImages>{{ t('button.add') }}</AddImages>
 
     <el-button
       type="danger"
@@ -45,7 +29,7 @@ async function addImages(): Promise<void> {
       :disabled="image.isLocked"
       @click="image.removeItems"
     >
-      Remove All
+      {{ t('button.remove') }}
     </el-button>
 
     <el-button
@@ -53,16 +37,36 @@ async function addImages(): Promise<void> {
       :icon="svgRender(mdiFolderOpen)"
       :disabled="image.output === ''"
       color="var(--color-primary)"
+      class="flex-end"
       @click="openFileExplorer(image.output)"
     >
-      Open Output
+      {{ t('button.output') }}
     </el-button>
+
+    <LocaleSelect />
   </div>
 </template>
+
+<i18n lang="yaml">
+en:
+  button:
+    again: Convert Again
+    add: Add Images
+    remove: Remove All
+    output: Open Output
+
+ja:
+  button:
+    again: 変換をやり直す
+    add: 画像を追加
+    remove: すべて取り除く
+    output: 出力先を開く
+</i18n>
 
 <style scoped>
 .list-header {
   display: flex;
+  align-items: center;
   padding: 12px 20px;
   background-color: #fff;
   border-bottom: 1px solid var(--el-border-color);
@@ -72,13 +76,17 @@ async function addImages(): Promise<void> {
       font-weight: 600;
     }
 
-    &:last-child {
-      margin-left: auto;
-    }
-
     :deep(.el-icon) {
       font-size: 1.2em;
     }
+  }
+
+  .flex-end {
+    margin-left: auto;
+  }
+
+  .locale-select {
+    margin-left: 12px;
   }
 }
 </style>
