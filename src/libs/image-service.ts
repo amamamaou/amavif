@@ -1,6 +1,6 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
-import { basename, sep } from '@tauri-apps/api/path'
+import { basename } from '@tauri-apps/api/path'
 import { isAllowInputMIMEType, sleep } from '@/libs/utils'
 import { convertNotification, loadNotification, type FileLoadFlags } from '@/libs/notification'
 import useImageStore from '@/store/image'
@@ -60,7 +60,7 @@ export async function addImages(paths: string[]): Promise<void> {
 
       image.standby.set(uuid, {
         path,
-        fileName: [...dir, fileName].join(sep()),
+        fileName: [...dir, fileName].join('/'),
         baseName: fileName.replace(/\.\w+$/, ''),
         dir,
         mimeType,
@@ -120,7 +120,7 @@ export async function convertImages(): Promise<void> {
 
     image.complete.set(uuid, {
       path,
-      fileName: [...orig.dir, `${orig.baseName}.${format}`].join(sep()),
+      fileName: [...orig.dir, `${orig.baseName}.${format}`].join('/'),
       baseName: orig.baseName,
       dir: orig.dir,
       mimeType: `image/${format}`,
