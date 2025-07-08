@@ -2,7 +2,11 @@
   "name": "amavif",
   "private": true,
   "version": "1.0.0",
+  "license": "MIT",
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
