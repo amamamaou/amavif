@@ -17,7 +17,6 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
-            is_directory,
             get_mime_type,
             get_file_size,
             collect_image_paths,
@@ -27,12 +26,6 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-/// ディレクトリか確認する
-#[tauri::command]
-fn is_directory(path: String) -> bool {
-    Path::new(&path).is_dir()
 }
 
 /// ファイルの MIME Type を取得する
@@ -146,7 +139,7 @@ async fn collect_image_paths(paths: Vec<String>) -> Result<Vec<PathData>, String
 }
 
 /// WebP変換処理
-fn encode_to_webp(path: String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
+fn encode_to_webp(path: &String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
     let img = image::open(path)?;
 
     let webp_data = WebpEncoder::from_image(&img)
@@ -159,7 +152,7 @@ fn encode_to_webp(path: String, output_path: &PathBuf, quality: u8) -> ImageResu
 }
 
 /// AVIF変換処理
-fn encode_to_avif(path: String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
+fn encode_to_avif(path: &String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
     let img = image::open(path)?;
     let buffer = img.to_rgba8();
 
@@ -236,9 +229,9 @@ async fn convert_images(
             output_path.push(&item.name);
 
             if format == String::from("webp") {
-                encode_to_webp(item.path.clone(), &output_path, quality).ok()?;
+                encode_to_webp(&item.path, &output_path, quality).ok()?;
             } else if format == String::from("avif") {
-                encode_to_avif(item.path.clone(), &output_path, quality).ok()?;
+                encode_to_avif(&item.path, &output_path, quality).ok()?;
             }
 
             // ファイルサイズ計算
