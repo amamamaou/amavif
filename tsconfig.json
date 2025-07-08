@@ -21,13 +21,20 @@
     "noFallthroughCasesInSwitch": true,
 
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] },
+    "paths": {
+      "@/*": ["src/*"]
+    },
     "types": [
       "vite/client",
       "element-plus/global",
-      "./src/auto-imports.d.ts"
     ]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue"
+  ],
+  "references": [
+    { "path": "./tsconfig.node.json" }
+  ]
 }

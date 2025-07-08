@@ -3,8 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
 import { Features } from 'lightningcss'
-import { fileURLToPath, URL } from 'node:url'
 
 const host = process.env.TAURI_DEV_HOST
 
@@ -14,10 +14,21 @@ export default defineConfig({
     vue(),
     AutoImport({
       dts: './src/auto-imports.d.ts',
+      eslintrc: {
+        enabled: true,
+        globalsPropValue: 'readonly',
+      },
       imports: [
+        'vue',
+        'vue-i18n',
         {
-          from: 'vue',
-          imports: ['computed', 'onMounted', 'ref'],
+          from: '@/store/image',
+          imports: [['default', 'useImageStore']],
+        },
+        {
+          from: '@/types/globals',
+          imports: ['Amavif'],
+          type: true,
         },
       ],
       resolvers: [ElementPlusResolver()],
@@ -26,11 +37,12 @@ export default defineConfig({
       dts: false,
       resolvers: [ElementPlusResolver()],
     }),
+    VueI18nPlugin(),
   ],
 
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@/': `${import.meta.dirname}/src/`,
     },
   },
 
