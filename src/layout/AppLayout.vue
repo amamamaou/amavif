@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { listen } from '@tauri-apps/api/event'
-import useImageStore from '@/store/image'
 
 import MainLayout from '@/layout/MainLayout.vue'
 import FooterControl from '@/components/FooterControl.vue'

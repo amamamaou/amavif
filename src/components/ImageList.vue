@@ -1,27 +1,28 @@
 <script setup lang="ts">
 import { getFormatName, formatBytes, svgRender } from '@/libs/utils'
-import useImageStore from '@/store/image'
 import { mdiArrowRight, mdiCheckCircle, mdiLoupe, mdiTrashCanOutline } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 
 withDefaults(defineProps<{
-  data: FileInfoMap;
+  data: Amavif.InfoMap;
   isComplete?: boolean;
 }>(), {
   isComplete: false,
 })
 
+const { t } = useI18n()
+const image = useImageStore()
+
 const LoupeIcon = svgRender(mdiLoupe)
 const TrashIcon = svgRender(mdiTrashCanOutline)
-const image = useImageStore()
 
 /** 画像がエラーになったときの通知 */
 function imageErrorNotice(uuid: string, fileName: string): void {
   image.removeItem(uuid)
 
   ElNotification.error({
-    title: 'Unsupported image file',
-    message: `Oops! '${fileName}' isn’t a supported image.`,
+    title: t('error.title'),
+    message: t('error.msg', { fileName }),
   })
 }
 
@@ -115,7 +116,7 @@ function previewImage(id: string): void {
 
       <div class="item-buttons">
         <el-tooltip
-          content="Click to preview"
+          :content="t('tooltip.preview')"
           placement="top"
           :hide-after="0"
         >
@@ -129,7 +130,7 @@ function previewImage(id: string): void {
         </el-tooltip>
 
         <el-tooltip
-          content="Remove this item"
+          :content="t('tooltip.remove')"
           placement="top"
           :hide-after="0"
         >
@@ -146,6 +147,24 @@ function previewImage(id: string): void {
     </li>
   </ul>
 </template>
+
+<i18n lang="yaml">
+en:
+  error:
+    title: Unsupported image file
+    msg: "Oops! '{fileName}' isn’t a supported image."
+  tooltip:
+    preview: Click to preview
+    remove: Remove this item
+
+ja:
+  error:
+    title: 非対応の画像ファイル
+    msg: "'{fileName}' は変換に対応していない画像です。"
+  tooltip:
+    preview: 画像のプレビュー
+    remove: この画像を取り除く
+</i18n>
 
 <style scoped>
 .image-list {

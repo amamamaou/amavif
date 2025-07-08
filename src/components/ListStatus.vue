@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { formatBytes } from '@/libs/utils'
-import useImageStore from '@/store/image'
-
 import { mdiArrowRight } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 
+const { t } = useI18n()
 const image = useImageStore()
-const size = computed<FileSizeData>(() => image.convertedSize)
+const size = computed<Amavif.FileSize>(() => image.convertedSize)
 </script>
 
 <template>
@@ -15,7 +14,7 @@ const size = computed<FileSizeData>(() => image.convertedSize)
       v-if="image.standby.size > 0"
       class="cell"
     >
-      <dt>Queued Images</dt>
+      <dt>{{ t('label.queue') }}</dt>
       <dd>
         <span class="total">{{ image.standby.size }}</span>
         <el-tag type="info" size="small">
@@ -28,7 +27,7 @@ const size = computed<FileSizeData>(() => image.convertedSize)
       v-if="image.complete.size > 0"
       class="cell"
     >
-      <dt>Converted Images</dt>
+      <dt>{{ t('label.converted') }}</dt>
       <dd>
         <span class="total">{{ image.complete.size }}</span>
 
@@ -54,6 +53,18 @@ const size = computed<FileSizeData>(() => image.convertedSize)
     </div>
   </dl>
 </template>
+
+<i18n lang="yaml">
+en:
+  label:
+    queue: Queued Images
+    converted: Converted Images
+
+ja:
+  label:
+    queue: 待機中の画像
+    converted: 変換済み画像
+</i18n>
 
 <style scoped>
 .list-status {

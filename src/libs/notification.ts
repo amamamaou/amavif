@@ -1,16 +1,24 @@
+import { t } from '@/i18n'
 import { sleep } from '@/libs/utils'
+
+/** 画像ファイル読み込み時のお知らせフラグ */
+export interface FileLoadFlags {
+  empty?: boolean;
+  duplicate?: boolean;
+  unsupported?: boolean;
+}
 
 /** 変換結果の通知 */
 export function convertNotification(result: boolean): void {
   if (result) {
     ElNotification.success({
-      title: 'Completed',
-      message: 'All done! Your images are ready.',
+      title: t('noti.success.title'),
+      message: t('noti.success.message'),
     })
   } else {
     ElNotification.error({
-      title: 'Failed',
-      message: 'Oops! Couldn’t convert the images.',
+      title: t('noti.failed.title'),
+      message: t('noti.failed.message'),
     })
   }
 }
@@ -20,18 +28,8 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // 重複したとき
   if (flags.duplicate) {
     ElNotification.info({
-      title: 'Duplicate images found',
-      message: 'Looks like those images were already in the list!',
-    })
-
-    await sleep(10)
-  }
-
-  // 複数回層のディレクトリが見つかったとき
-  if (flags.directory) {
-    ElNotification.info({
-      title: 'Too many folder levels',
-      message: 'Image loading only works one level deep in folders. This one was skipped.',
+      title: t('noti.duplicate.title'),
+      message: t('noti.duplicate.message'),
     })
 
     await sleep(10)
@@ -40,8 +38,8 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // サポートしないファイル
   if (flags.unsupported) {
     ElNotification.warning({
-      title: 'Unsupported images found',
-      message: 'Some images weren’t added because their format isn’t supported.',
+      title: t('noti.unsupported.title'),
+      message: t('noti.unsupported.message'),
     })
 
     await sleep(10)
@@ -50,8 +48,8 @@ export async function loadNotification(flags: FileLoadFlags): Promise<void> {
   // 結果的に0件だった場合
   if (flags.empty) {
     ElNotification.info({
-      title: 'No image files found',
-      message: 'No images were found that can be loaded.',
+      title: t('noti.empty.title'),
+      message: t('noti.empty.message'),
     })
   }
 }

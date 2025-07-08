@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import useImageStore from '@/store/image'
 import AppLayout from '@/layout/AppLayout.vue'
+import { initI18n } from '@/i18n'
 
 const image = useImageStore()
-onMounted(() => image.loadSettings())
+onMounted(() => {
+  initI18n()
+  image.loadSettings()
+})
 </script>
 
 <template>

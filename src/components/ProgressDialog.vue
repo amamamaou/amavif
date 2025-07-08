@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import useImageStore from '@/store/image'
-
+const { t } = useI18n()
 const image = useImageStore()
 
 /** 進捗率 */
@@ -12,9 +11,9 @@ const percentage = computed<number>(() => {
 
 /** ダイアログテキスト */
 const dialogText = computed<string>(() => {
-  if (image.status === 'loading') return 'Loading images...'
-  if (image.status === 'converting') return 'Converting images...'
-  return 'Done'
+  if (image.status === 'loading') return t('loading')
+  if (image.status === 'converting') return t('converting')
+  return t('done')
 })
 </script>
 
@@ -50,6 +49,18 @@ const dialogText = computed<string>(() => {
     </div>
   </el-dialog>
 </template>
+
+<i18n lang="yaml">
+en:
+  loading: Loading Images...
+  converting: Converting Images...
+  done: Done
+
+ja:
+  loading: 画像を読込中...
+  converting: 画像を変換中...
+  done: 完了
+</i18n>
 
 <style scoped>
 .dialog-text {

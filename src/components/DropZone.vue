@@ -1,42 +1,43 @@
 <script setup lang="ts">
-import { openDialog, svgRender } from '@/libs/utils'
-import useImageStore from '@/store/image'
-
-import { mdiFileImagePlus } from '@mdi/js'
+import AddImages from '@/components/AddImages.vue'
+import LocaleSelect from '@/components/LocaleSelect.vue'
 import SvgIcon from '@/components/SvgIcon.vue'
+import { mdiFileImagePlus } from '@mdi/js'
 
-const image = useImageStore()
-
-/** ダイアログを開いてファイル追加する */
-async function addImages(): Promise<void> {
-  const paths = await openDialog()
-  image.addImages(paths)
-}
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="drop-zone">
+    <LocaleSelect />
+
     <div class="drop-message">
       <SvgIcon :path="mdiFileImagePlus" class="icon" />
-      <p class="text">Drop your images here!</p>
+      <p class="text">{{ t('drop-text') }}</p>
     </div>
 
     <div class="drop-select">
-      <span class="text">or</span>
-      <el-button
-        :icon="svgRender(mdiFileImagePlus)"
-        color="var(--color-primary)"
-        class="button"
-        @click="addImages"
-      >
-        Select Images
-      </el-button>
+      <span class="text">{{ t('drop-or') }}</span>
+      <AddImages class="button">{{ t('select-image') }}</AddImages>
     </div>
   </div>
 </template>
 
+<i18n lang="yaml">
+en:
+  drop-text: Drop your images or folders here!
+  drop-or: or
+  select-image: Select Images
+
+ja:
+  drop-text: ここに画像またはフォルダをドラッグ＆ドロップ
+  drop-or: または
+  select-image: 画像を選択する
+</i18n>
+
 <style scoped>
 .drop-zone {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -79,5 +80,11 @@ async function addImages(): Promise<void> {
       font-size: 1.2em;
     }
   }
+}
+
+.locale-select {
+  position: absolute;
+  top: 12px;
+  right: 20px;
 }
 </style>
