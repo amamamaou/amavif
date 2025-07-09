@@ -132,9 +132,6 @@ const useImageStore = defineStore('image', {
 
     /** 出力先パスを保存する */
     async setOutput(output: string): Promise<void> {
-      // 出力先パスが変更された場合、変換済み一覧は消す
-      if (output !== this.output) this.complete.clear()
-
       this.output = output
       await store.set('output', output)
     },
