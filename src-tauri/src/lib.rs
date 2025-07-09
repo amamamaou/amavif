@@ -204,9 +204,9 @@ async fn convert_images(
 
             // 各種エンコード
             if format == "webp" {
-                encode::encode_to_webp(&item.path, &output_path, quality).ok()?;
+                encode::to_webp(&item.path, &output_path, quality).ok()?;
             } else if format == "avif" {
-                encode::encode_to_avif(&item.path, &output_path, quality).ok()?;
+                encode::to_avif(&item.path, &output_path, quality).ok()?;
             }
 
             // ファイルサイズ計算

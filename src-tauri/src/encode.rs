@@ -24,7 +24,7 @@ pub enum WebpError {
 }
 
 /// WebP変換処理
-pub fn encode_to_webp(
+pub fn to_webp(
     path: &String,
     output_path: &PathBuf,
     quality: u8,
@@ -58,7 +58,7 @@ pub enum AvifError {
 }
 
 /// AVIF変換処理
-pub fn encode_to_avif(
+pub fn to_avif(
     path: &String,
     output_path: &PathBuf,
     quality: u8,
