@@ -83,7 +83,8 @@ export async function addImages(paths: string[]): Promise<void> {
 export async function convertImages(): Promise<void> {
   const image = useImageStore()
   const { format, quality, output } = image
-  let result = true
+  let isSuccess = true
+  let message = ''
 
   image.initProgress('converting', image.standby.size)
 
@@ -98,14 +99,19 @@ export async function convertImages(): Promise<void> {
   const unlisten = await listen('progress', () => image.progress.count++)
 
   // 変換開始
-  const reult = await invoke<ConvertedData[]>(
+  const result = await invoke<ConvertedData[]>(
     'convert_images',
     { fileData, format, quality, output },
   ).catch((error) => {
-    result = false
+    isSuccess = false
 
-    // eslint-disable-next-line no-console
-    if (error instanceof Error) console.error(error.message)
+    if (error instanceof Error) {
+      message = error.message
+    } else if (typeof error === 'string') {
+      message = error
+    } else {
+      message = 'Unknown Error'
+    }
 
     // 変換成功したものだけ取得する
     return invoke<ConvertedData[]>('check_existing_files', { fileData, output })
@@ -113,8 +119,13 @@ export async function convertImages(): Promise<void> {
 
   unlisten()
 
+  // 部分的に変換されなかったものがあった場合
+  if (isSuccess && result.length < fileData.length) {
+    message = 'Partial Error'
+  }
+
   // データ整理
-  for (const { uuid, path, fileSize } of reult) {
+  for (const { uuid, path, fileSize } of result) {
     const orig = image.standby.get(uuid)
     if (!orig) continue
 
@@ -138,5 +149,5 @@ export async function convertImages(): Promise<void> {
 
   image.done()
 
-  convertNotification(result)
+  convertNotification(isSuccess, message)
 }

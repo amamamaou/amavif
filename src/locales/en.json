@@ -8,17 +8,17 @@
       "title": "Completed",
       "message": "All done! Your images are ready."
     },
+    "partial": {
+      "title": "Some conversions failed",
+      "message": "Some images couldn't be converted. Please check the list for details."
+    },
     "failed": {
       "title": "Failed",
-      "message": "Oops! Couldn’t convert the images."
+      "message": "Oops! Couldn’t convert the images: {msg}"
     },
     "duplicate": {
       "title": "Duplicate images found",
       "message": "Looks like those images were already in the list!"
-    },
-    "directory": {
-      "title": "Too many folder levels",
-      "message": "Image loading only works one level deep in folders. This one was skipped."
     },
     "unsupported": {
       "title": "Unsupported images found",

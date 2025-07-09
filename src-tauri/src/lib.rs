@@ -1,14 +1,12 @@
-use image::error::ImageResult;
-use ravif::Encoder as AvifEncoder;
+mod encode;
+
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
-use rgb::FromSlice;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tauri::Emitter;
 use uuid::Uuid;
-use webp::Encoder as WebpEncoder;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -56,7 +54,7 @@ fn generate_uuid(path: &String) -> String {
     uuid.to_string()
 }
 
-/// フロントエンドに返す画像のパスとディレクトリ情報を保持する構造体
+/// パスデータ
 #[derive(Debug, Serialize, Deserialize)]
 struct PathData {
     uuid: String,
@@ -74,14 +72,17 @@ fn is_image_file(path: &Path) -> bool {
     }
 }
 
-/// ディレクトリを再帰的に走査し、画像ファイルとディレクトリ階層を収集する
+/// 画像ファイルとディレクトリ階層を収集する
 fn collect_image_paths_recursive(
     current_path: &Path,
     base_dirs: Vec<String>,
     image_infos: &mut Vec<PathData>,
 ) -> Result<(), String> {
+    let entries = fs::read_dir(current_path)
+        .map_err(|e| e.to_string())?;
+
     // ディレクトリ配下を取得
-    for entry in fs::read_dir(current_path).map_err(|e| e.to_string())? {
+    for entry in entries {
         let entry = entry.map_err(|e| e.to_string())?;
         let path = entry.path();
 
@@ -138,41 +139,6 @@ async fn collect_image_paths(paths: Vec<String>) -> Result<Vec<PathData>, String
     Ok(image_infos)
 }
 
-/// WebP変換処理
-fn encode_to_webp(path: &String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
-    let img = image::open(path)?;
-
-    let webp_data = WebpEncoder::from_image(&img)
-        .unwrap()
-        .encode(quality as f32);
-
-    fs::write(output_path, &*webp_data).unwrap();
-
-    Ok(())
-}
-
-/// AVIF変換処理
-fn encode_to_avif(path: &String, output_path: &PathBuf, quality: u8) -> ImageResult<()> {
-    let img = image::open(path)?;
-    let buffer = img.to_rgba8();
-
-    let new_img = imgref::Img::new(
-        buffer.as_rgba(),
-        img.width() as usize,
-        img.height() as usize,
-    );
-
-    let avif_data = AvifEncoder::new()
-        .with_quality(quality as f32)
-        .encode_rgba(new_img)
-        .unwrap()
-        .avif_file;
-
-    fs::write(output_path, &avif_data).unwrap();
-
-    Ok(())
-}
-
 /// ファイル情報
 #[derive(Debug, Serialize, Deserialize)]
 struct FileInfo {
@@ -199,12 +165,20 @@ async fn convert_images(
     format: String,
     quality: u8,
     output: String,
-) -> Result<Vec<ConvertedData>, tauri::Error> {
+) -> Result<Vec<ConvertedData>, String> {
+    // フォーマットチェック
+    if !matches!(format.as_str(), "avif" | "webp") {
+        return Err(format!("Unknown format: {}", format));
+    }
+
     let output_dir = PathBuf::from(&output);
 
     // もしディレクトリが存在しない場合は作る
     if !output_dir.is_dir() {
-        fs::create_dir_all(&output_dir)?;
+        fs::create_dir_all(&output_dir)
+            .map_err(|e| {
+                format!("Failed to create directory {}: {}", output_dir.display(), e)
+            })?;
     }
 
     // rayonで並列処理を行う
@@ -228,10 +202,11 @@ async fn convert_images(
             // ファイル名を結合する
             output_path.push(&item.name);
 
-            if format == String::from("webp") {
-                encode_to_webp(&item.path, &output_path, quality).ok()?;
-            } else if format == String::from("avif") {
-                encode_to_avif(&item.path, &output_path, quality).ok()?;
+            // 各種エンコード
+            if format == "webp" {
+                encode::encode_to_webp(&item.path, &output_path, quality).ok()?;
+            } else if format == "avif" {
+                encode::encode_to_avif(&item.path, &output_path, quality).ok()?;
             }
 
             // ファイルサイズ計算

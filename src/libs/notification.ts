@@ -9,16 +9,23 @@ export interface FileLoadFlags {
 }
 
 /** 変換結果の通知 */
-export function convertNotification(result: boolean): void {
+export function convertNotification(result: boolean, msg: string): void {
   if (result) {
-    ElNotification.success({
-      title: t('noti.success.title'),
-      message: t('noti.success.message'),
-    })
+    if (msg === '') {
+      ElNotification.success({
+        title: t('noti.success.title'),
+        message: t('noti.success.message'),
+      })
+    } else {
+      ElNotification.warning({
+        title: t('noti.partial.title'),
+        message: t('noti.partial.message'),
+      })
+    }
   } else {
     ElNotification.error({
       title: t('noti.failed.title'),
-      message: t('noti.failed.message'),
+      message: t('noti.failed.message', { msg }),
     })
   }
 }
