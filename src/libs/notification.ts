@@ -1,4 +1,3 @@
-import { ElNotification } from 'element-plus'
 import { t } from '@/i18n'
 
 const notification = {
