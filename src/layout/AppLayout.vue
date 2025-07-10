@@ -19,10 +19,9 @@ listen('tauri://drag-leave', () => {
   isDropEnter.value = false
 })
 
-listen('tauri://drag-drop', (event) => {
+listen<{ paths: string[] }>('tauri://drag-drop', (event) => {
   if (!image.isLocked) {
-    const paths = (event.payload as { paths: string[] }).paths
-    image.addImages(paths)
+    image.addImages(event.payload.paths)
   }
 
   isDropEnter.value = false

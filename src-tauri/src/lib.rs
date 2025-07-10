@@ -15,9 +15,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
-            get_mime_type,
-            get_file_size,
-            collect_image_paths,
+            get_image_info,
             convert_images,
             check_existing_files,
             open_file_explorer,
@@ -26,43 +24,15 @@ pub fn run() {
         .expect("error while running tauri application");
 }
 
-/// ファイルの MIME Type を取得する
-#[tauri::command]
-fn get_mime_type(path: String) -> String {
-    let result = if Path::new(&path).is_dir() {
-        "directory"
-    } else if let Ok(Some(kind)) = infer::get_from_path(&path) {
-        kind.mime_type()
-    } else {
-        "application/octet-stream"
-    };
-    result.to_string()
-}
-
-/// ファイルサイズを取得する
-#[tauri::command]
-fn get_file_size(path: String) -> u64 {
-    fs::metadata(&path)
-        .map(|meta| meta.len())
-        .unwrap_or(0)
-}
-
 /// ファイルパスからUUIDを生成する
-fn generate_uuid(path: &String) -> String {
+fn generate_uuid(path: &PathBuf) -> String {
+    let path_str = path.to_string_lossy();
     let ns = Uuid::NAMESPACE_URL;
-    let uuid = Uuid::new_v5(&ns, path.as_bytes());
+    let uuid = Uuid::new_v5(&ns, path_str.as_bytes());
     uuid.to_string()
 }
 
-/// パスデータ
-#[derive(Debug, Serialize, Deserialize)]
-struct PathData {
-    uuid: String,
-    path: String,
-    dir: Vec<String>,
-}
-
-/// 画像の拡張子を判定するヘルパー関数
+/// 拡張子を見て画像か判別する
 fn is_image_file(path: &Path) -> bool {
     if let Some(ext) = path.extension() {
         let ext_str = ext.to_string_lossy().to_lowercase();
@@ -72,11 +42,36 @@ fn is_image_file(path: &Path) -> bool {
     }
 }
 
-/// 画像ファイルとディレクトリ階層を収集する
-fn collect_image_paths_recursive(
+/// ファイルのMIMEタイプを見て画像か判断する
+fn get_image_mime(path: &Path) -> Option<String> {
+    if let Ok(Some(kind)) = infer::get_from_path(&path) {
+        let mime = kind.mime_type();
+        matches!(mime, "image/jpeg" | "image/png" | "image/webp")
+            .then(|| mime.to_string())
+    } else {
+        None
+    }
+}
+
+/// ファイルサイズを取得する
+fn get_file_size(path: &Path) -> u64 {
+    fs::metadata(&path)
+        .map(|meta| meta.len())
+        .unwrap_or(0)
+}
+
+/// パス情報
+#[derive(Debug)]
+struct PathData {
+    path: PathBuf,
+    dir: Vec<String>,
+}
+
+/// 再帰的に複数階層のフォルダから画像のパスを取得する
+fn get_image_path_recursive(
     current_path: &Path,
     base_dirs: Vec<String>,
-    image_infos: &mut Vec<PathData>,
+    image_paths: &mut Vec<PathData>,
 ) -> Result<(), String> {
     let entries = fs::read_dir(current_path)
         .map_err(|e| e.to_string())?;
@@ -87,12 +82,9 @@ fn collect_image_paths_recursive(
         let path = entry.path();
 
         if path.is_file() {
-            // 画像ファイルの場合がそのまま格納
             if is_image_file(&path) {
-                let file_path = path.to_string_lossy().to_string();
-                image_infos.push(PathData {
-                    uuid: generate_uuid(&file_path),
-                    path: file_path,
+                image_paths.push(PathData {
+                    path,
                     dir: base_dirs.clone(),
                 });
             }
@@ -101,28 +93,42 @@ fn collect_image_paths_recursive(
             if let Some(dir_name_os) = path.file_name() {
                 let mut new_base_dirs = base_dirs.clone();
                 new_base_dirs.push(dir_name_os.to_string_lossy().to_string());
-                collect_image_paths_recursive(&path, new_base_dirs, image_infos)?;
+                get_image_path_recursive(&path, new_base_dirs, image_paths)?;
             }
         }
     }
+
     Ok(())
 }
 
-/// パスを整える
-#[tauri::command]
-async fn collect_image_paths(paths: Vec<String>) -> Result<Vec<PathData>, String> {
-    let mut image_infos: Vec<PathData> = Vec::new();
+/// 画像情報
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ImageInfo {
+    uuid: String,
+    path: PathBuf,
+    file_name: String,
+    file_size: u64,
+    mime: String,
+    dir: Vec<String>,
+}
 
+/// パスを整えて画像情報を取得する
+#[tauri::command]
+async fn get_image_info(
+    app: tauri::AppHandle,
+    paths: Vec<String>,
+) -> Result<Vec<ImageInfo>, String> {
+    let mut image_paths: Vec<PathData> = Vec::new();
+
+    // 画像のパスを取得する
     for path_str in paths {
         let path = PathBuf::from(&path_str);
 
         if path.is_file() {
-            // 画像ファイルの場合がそのまま格納
             if is_image_file(&path) {
-                let file_path = path.to_string_lossy().to_string();
-                image_infos.push(PathData {
-                    uuid: generate_uuid(&file_path),
-                    path: file_path,
+                image_paths.push(PathData {
+                    path,
                     dir: Vec::new(),
                 });
             }
@@ -131,20 +137,50 @@ async fn collect_image_paths(paths: Vec<String>) -> Result<Vec<PathData>, String
             if let Some(dir_name_os) = path.file_name() {
                 let mut base_dirs = Vec::new();
                 base_dirs.push(dir_name_os.to_string_lossy().to_string());
-                collect_image_paths_recursive(&path, base_dirs, &mut image_infos)?;
+                get_image_path_recursive(&path, base_dirs, &mut image_paths)?;
             }
         }
     }
+
+    // 全体のパスの数を通知
+    app.emit("total", image_paths.len())
+        .map_err(|e| e.to_string())?;
+
+    // 画像情報を取得する
+    let image_infos = image_paths
+        .par_iter()
+        .filter_map(|data| {
+            if let Some(mime) = get_image_mime(&data.path) {
+                let file_name = data.path.file_name()?.to_string_lossy().into_owned();
+                let file_size = get_file_size(&data.path);
+
+                app.emit("progress", {}).ok()?;
+
+                Some(ImageInfo {
+                    uuid: generate_uuid(&data.path),
+                    path: data.path.clone(),
+                    file_name,
+                    file_size,
+                    mime,
+                    dir: data.dir.clone(),
+                })
+            } else {
+                app.emit("progress", {}).ok()?;
+                None
+            }
+        })
+        .collect::<Vec<_>>();
 
     Ok(image_infos)
 }
 
 /// ファイル情報
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct FileInfo {
     uuid: String,
     path: String,
-    name: String,
+    file_name: String,
     dir: Vec<String>,
 }
 
@@ -200,7 +236,7 @@ async fn convert_images(
             }
 
             // ファイル名を結合する
-            output_path.push(&item.name);
+            output_path.push(&item.file_name);
 
             // 各種エンコード
             if format == "webp" {
@@ -210,9 +246,7 @@ async fn convert_images(
             }
 
             // ファイルサイズ計算
-            let file_size = fs::metadata(&output_path)
-                .map(|meta| meta.len())
-                .unwrap_or(0);
+            let file_size = get_file_size(&output_path);
 
             // 進行状況を通知
             app.emit("progress", {}).ok()?;
@@ -249,13 +283,11 @@ async fn check_existing_files(
             }
 
             // ファイル名を結合する
-            output_path.push(item.name);
+            output_path.push(item.file_name);
 
             if output_path.is_file() {
                 // ファイルサイズ計算
-                let file_size = fs::metadata(&output_path)
-                    .map(|meta| meta.len())
-                    .unwrap_or(0);
+                let file_size = get_file_size(&output_path);
 
                 Some(ConvertedData {
                     uuid: item.uuid,
