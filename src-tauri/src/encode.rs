@@ -3,11 +3,11 @@ use imgref::Img;
 use ravif::{Encoder as AvifEncoder, Error as AvifEncodingError};
 use rgb::FromSlice;
 use std::{fs, io};
-use std::path::PathBuf;
+use std::path::Path;
 use thiserror::Error;
 use webp::{Encoder as WebpEncoder};
 
-/// WepBエンコードエラー
+/// WebPエンコードエラー
 #[derive(Error, Debug)]
 pub enum WebpError {
     /// 画像ファイルの読み込み中に発生したエラー
@@ -26,7 +26,7 @@ pub enum WebpError {
 /// WebP変換処理
 pub fn to_webp(
     path: &String,
-    output_path: &PathBuf,
+    output_path: &Path,
     quality: u8,
 ) -> Result<(), WebpError> {
     let img = image::open(path)?;
@@ -60,7 +60,7 @@ pub enum AvifError {
 /// AVIF変換処理
 pub fn to_avif(
     path: &String,
-    output_path: &PathBuf,
+    output_path: &Path,
     quality: u8,
 ) -> Result<(), AvifError> {
     let img = image::open(path)?;

@@ -25,7 +25,7 @@ pub fn run() {
 }
 
 /// ファイルパスからUUIDを生成する
-fn generate_uuid(path: &PathBuf) -> String {
+fn generate_uuid(path: &Path) -> String {
     let path_str = path.to_string_lossy();
     let ns = Uuid::NAMESPACE_URL;
     let uuid = Uuid::new_v5(&ns, path_str.as_bytes());
