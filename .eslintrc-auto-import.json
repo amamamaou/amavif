@@ -6,7 +6,6 @@
     "ComputedRef": "readonly",
     "DirectiveBinding": "readonly",
     "EffectScope": "readonly",
-    "ElNotification": "readonly",
     "ExtractDefaultPropTypes": "readonly",
     "ExtractPropTypes": "readonly",
     "ExtractPublicPropTypes": "readonly",

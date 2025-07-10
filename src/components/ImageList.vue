@@ -14,16 +14,6 @@ const image = useImageStore()
 const LoupeIcon = svgRender(mdiLoupe)
 const TrashIcon = svgRender(mdiTrashCanOutline)
 
-/** 画像がエラーになったときの通知 */
-function imageErrorNotice(uuid: string, fileName: string): void {
-  image.removeItem(uuid)
-
-  ElNotification.error({
-    title: t('error.title'),
-    message: t('error.msg', { fileName }),
-  })
-}
-
 /** 画像プレビュー */
 function previewImage(id: string): void {
   const el = document.getElementById('image-' + id)
@@ -54,9 +44,9 @@ function previewImage(id: string): void {
           :src="item.fileSrc"
           :alt="item.fileName"
           :preview-src-list="[item.fileSrc]"
+          lazy
           preview-teleported
           hide-on-click-modal
-          @error="imageErrorNotice(uuid, item.fileName)"
         />
       </figure>
 
@@ -114,7 +104,7 @@ function previewImage(id: string): void {
 
       <div class="item-buttons">
         <el-tooltip
-          :content="t('tooltip.preview')"
+          :content="t('preview')"
           placement="top"
           :hide-after="0"
         >
@@ -128,7 +118,7 @@ function previewImage(id: string): void {
         </el-tooltip>
 
         <el-tooltip
-          :content="t('tooltip.remove')"
+          :content="t('remove')"
           placement="top"
           :hide-after="0"
         >
@@ -148,20 +138,12 @@ function previewImage(id: string): void {
 
 <i18n lang="yaml">
 en:
-  error:
-    title: Unsupported image file
-    msg: "Oops! '{fileName}' isn’t a supported image."
-  tooltip:
-    preview: Click to preview
-    remove: Remove this item
+  preview: Click to preview
+  remove: Remove this item
 
 ja:
-  error:
-    title: 非対応の画像ファイル
-    msg: "'{fileName}' は変換に対応していない画像です。"
-  tooltip:
-    preview: 画像のプレビュー
-    remove: この画像を取り除く
+  preview: 画像のプレビュー
+  remove: この画像を取り除く
 </i18n>
 
 <style scoped>
