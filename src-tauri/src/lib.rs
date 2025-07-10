@@ -102,7 +102,7 @@ fn get_image_path_recursive(
 }
 
 /// 画像情報
-#[derive(Clone, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ImageInfo {
     uuid: String,
@@ -185,7 +185,7 @@ struct FileInfo {
 }
 
 /// 変換後データ
-#[derive(Clone, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ConvertedData {
     uuid: String,
