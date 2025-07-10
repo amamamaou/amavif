@@ -35,10 +35,10 @@ const image = useImageStore()
     <el-button
       plain
       :icon="svgRender(mdiFolderOpen)"
-      :disabled="image.output === ''"
+      :disabled="image.options.output === ''"
       color="var(--color-primary)"
       class="flex-end"
-      @click="openFileExplorer(image.output)"
+      @click="openFileExplorer(image.options.output)"
     >
       {{ t('button.output') }}
     </el-button>

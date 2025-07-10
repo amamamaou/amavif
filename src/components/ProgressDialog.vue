@@ -11,8 +11,8 @@ const percentage = computed<number>(() => {
 
 /** ダイアログテキスト */
 const dialogText = computed<string>(() => {
-  if (image.status === 'loading') return t('loading')
-  if (image.status === 'converting') return t('converting')
+  if (image.progress.status === 'loading') return t('loading')
+  if (image.progress.status === 'converting') return t('converting')
   return t('done')
 })
 </script>
@@ -68,5 +68,11 @@ ja:
   font-size: 1.6rem;
   font-weight: 600;
   text-align: center;
+}
+
+.el-progress {
+  :deep(.el-progress-bar__inner) {
+    transition-duration: 0.3s;
+  }
 }
 </style>

@@ -5,25 +5,25 @@ const { t } = useI18n()
 const image = useImageStore()
 
 const format = computed<Amavif.Format>({
-  get() { return image.format },
+  get() { return image.options.format },
   set(value) { image.setFormat(value) },
 })
 
 const quality = computed<number>({
-  get() { return image.quality },
+  get() { return image.options.quality },
   set(value) { image.setQuality(value) },
 })
 
 /** ツールチップメッセージ */
 const tooltipContent = computed<string>(() => {
   if (image.standby.size === 0) return t('tooltip.image')
-  if (image.output === '') return t('tooltip.output')
+  if (image.options.output === '') return t('tooltip.output')
   return ''
 })
 
 /** 出力先選択 */
 async function selectOutput(): Promise<void> {
-  const path = await selectDialog(image.output)
+  const path = await selectDialog(image.options.output)
   image.setOutput(path)
 }
 </script>
@@ -69,7 +69,7 @@ async function selectOutput(): Promise<void> {
       </el-button>
 
       <el-input
-        :value="image.output"
+        :value="image.options.output"
         :placeholder="t('placeholder')"
         readonly
         @click="selectOutput"

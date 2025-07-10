@@ -3,12 +3,10 @@ import { getFormatName, formatBytes, svgRender } from '@/libs/utils'
 import { mdiArrowRight, mdiCheckCircle, mdiLoupe, mdiTrashCanOutline } from '@mdi/js'
 import SvgIcon from '@/components/SvgIcon.vue'
 
-withDefaults(defineProps<{
+defineProps<{
   data: Amavif.InfoMap;
   isComplete?: boolean;
-}>(), {
-  isComplete: false,
-})
+}>()
 
 const { t } = useI18n()
 const image = useImageStore()
@@ -76,13 +74,13 @@ function previewImage(id: string): void {
           </el-tag>
 
           <el-tag type="primary">
-            {{ getFormatName(item.mimeType) }}
+            {{ getFormatName(item.mime) }}
           </el-tag>
 
           <SvgIcon :path="mdiArrowRight" />
 
           <el-tag type="success">
-            {{ getFormatName(image.format) }}
+            {{ getFormatName(image.options.format) }}
           </el-tag>
         </div>
 
@@ -91,7 +89,7 @@ function previewImage(id: string): void {
           class="item-info"
         >
           <el-tag type="success">
-            {{ getFormatName(item.mimeType) }}
+            {{ getFormatName(item.mime) }}
           </el-tag>
 
           <el-tag type="info" class="before">

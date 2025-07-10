@@ -2,14 +2,7 @@ import { h, type VNode } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import { t } from '@/i18n'
-
-/** 許可するMIMEタイプ */
-const allowInputMIMEType: Amavif.MIMEType[] = ['image/jpeg', 'image/png', 'image/webp']
-
-/** 許可するMIMEタイプかどうか */
-export function isAllowInputMIMEType(mime: string): mime is Amavif.MIMEType {
-  return allowInputMIMEType.some(v => v === mime)
-}
+import notification from '@/libs/notification'
 
 /** 画像選択ダイアログを開く */
 export async function openDialog(): Promise<string[]> {
@@ -38,6 +31,13 @@ export async function selectDialog(defaultPath: string): Promise<string> {
   return path ?? ''
 }
 
+/** catchによるエラー判別 */
+export function getErrorMessage(error: unknown): string {
+  if (typeof error === 'string') return error
+  if (error instanceof Error) return error.message
+  return 'Unknown Error'
+}
+
 /** 指定したパスを開く */
 export async function openFileExplorer(path: string): Promise<void> {
   if (!path) return
@@ -45,17 +45,7 @@ export async function openFileExplorer(path: string): Promise<void> {
   try {
     await invoke<void>('open_file_explorer', { path })
   } catch (error) {
-    let message = ''
-
-    if (error instanceof Error) {
-      message = error.message
-    } else if (typeof error === 'string') {
-      message = error
-    }
-
-    if (message) {
-      ElNotification.error({ title: 'Error', message })
-    }
+    notification.error(getErrorMessage(error))
   }
 }
 

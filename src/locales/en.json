@@ -16,13 +16,9 @@
       "title": "Failed",
       "message": "Oops! Couldn’t convert the images: {msg}"
     },
-    "duplicate": {
-      "title": "Duplicate images found",
-      "message": "Looks like those images were already in the list!"
-    },
-    "unsupported": {
-      "title": "Unsupported images found",
-      "message": "Some images weren’t added because their format isn’t supported."
+    "load": {
+      "title": "Loading failed",
+      "message": "Failed to retrieve folder information: {msg}"
     },
     "empty": {
       "title": "No image files found",

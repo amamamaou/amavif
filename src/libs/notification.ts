@@ -1,62 +1,55 @@
+import { ElNotification } from 'element-plus'
 import { t } from '@/i18n'
-import { sleep } from '@/libs/utils'
 
-/** 画像ファイル読み込み時のお知らせフラグ */
-export interface FileLoadFlags {
-  empty?: boolean;
-  duplicate?: boolean;
-  unsupported?: boolean;
-}
+const notification = {
+  load: {
+    /** 画像読み込みエラー */
+    failed(msg: string): void {
+      ElNotification.error({
+        title: t('noti.load.title'),
+        message: t('noti.load.message', { msg }),
+      })
+    },
 
-/** 変換結果の通知 */
-export function convertNotification(result: boolean, msg: string): void {
-  if (result) {
-    if (msg === '') {
+    /** 0件だった時 */
+    empty(): void {
+      ElNotification.info({
+        title: t('noti.empty.title'),
+        message: t('noti.empty.message'),
+      })
+    },
+  },
+
+  convert: {
+    /** 変換成功 */
+    success(): void {
       ElNotification.success({
         title: t('noti.success.title'),
         message: t('noti.success.message'),
       })
-    } else {
+    },
+
+    /** 一部変換失敗 */
+    partial(): void {
       ElNotification.warning({
         title: t('noti.partial.title'),
         message: t('noti.partial.message'),
       })
-    }
-  } else {
-    ElNotification.error({
-      title: t('noti.failed.title'),
-      message: t('noti.failed.message', { msg }),
-    })
-  }
-}
+    },
 
-/** ファイル読み込み時の通知処理 */
-export async function loadNotification(flags: FileLoadFlags): Promise<void> {
-  // 重複したとき
-  if (flags.duplicate) {
-    ElNotification.info({
-      title: t('noti.duplicate.title'),
-      message: t('noti.duplicate.message'),
-    })
+    /** 変換失敗 */
+    failed(msg: string): void {
+      ElNotification.error({
+        title: t('noti.failed.title'),
+        message: t('noti.failed.message', { msg }),
+      })
+    },
+  },
 
-    await sleep(10)
-  }
+  /** 汎用エラー */
+  error(message: string): void {
+    ElNotification.error({ title: 'Error', message })
+  },
+} as const
 
-  // サポートしないファイル
-  if (flags.unsupported) {
-    ElNotification.warning({
-      title: t('noti.unsupported.title'),
-      message: t('noti.unsupported.message'),
-    })
-
-    await sleep(10)
-  }
-
-  // 結果的に0件だった場合
-  if (flags.empty) {
-    ElNotification.info({
-      title: t('noti.empty.title'),
-      message: t('noti.empty.message'),
-    })
-  }
-}
+export default notification

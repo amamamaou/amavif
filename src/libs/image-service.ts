@@ -1,14 +1,16 @@
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
-import { listen } from '@tauri-apps/api/event'
-import { basename } from '@tauri-apps/api/path'
-import { isAllowInputMIMEType, sleep } from '@/libs/utils'
-import { convertNotification, loadNotification, type FileLoadFlags } from '@/libs/notification'
+import { once, listen } from '@tauri-apps/api/event'
+import { getErrorMessage, sleep } from '@/libs/utils'
+import notification from '@/libs/notification'
 import useImageStore from '@/store/image'
 
-/** パスデータ */
-interface PathData {
+/** 画像情報 */
+interface ImageInfo {
   uuid: string;
   path: string;
+  fileName: string,
+  fileSize: number;
+  mime: Amavif.MIMEType;
   dir: string[];
 }
 
@@ -22,77 +24,75 @@ interface ConvertedData {
 /** 画像ファイルを追加する */
 export async function addImages(paths: string[]): Promise<void> {
   if (paths.length === 0) {
-    loadNotification({ empty: true })
+    notification.load.empty()
     return
   }
 
   const image = useImageStore()
   image.initProgress('loading')
 
-  // フォルダを含むパスから画像ファイルを抽出する
-  const pathData = await invoke<PathData[]>('collect_image_paths', { paths })
-  image.progress.total = pathData.length
+  // 進捗イベント
+  const unlistenTotal = await once<number>('total', (event) => {
+    image.progress.total = event.payload
+  })
+  const unlistenProgress = await listen('progress', () => image.progress.count++)
 
-  /** 通知フラグ */
-  const flags: FileLoadFlags = {
-    empty: pathData.length === 0,
-  }
+  try {
+    // パスから画像情報を取得する
+    const imageInfos = await invoke<ImageInfo[]>('get_image_info', { paths })
 
-  // パスから画像情報を取得する
-  for (const { uuid, path, dir } of pathData) {
-    // 重複しているか
-    if (image.standby.has(uuid)) {
-      flags.duplicate = true
-      image.progress.count++
-      continue
+    if (imageInfos.length === 0) {
+      notification.load.empty()
+      return
     }
 
-    // 完了データに存在する場合は取り除く
-    image.complete.delete(uuid)
+    // 一時的な非リアクティブMapを作る
+    const newStandby = new Map(image.standby)
+    const newComplete = new Map(image.complete)
 
-    // MIMEタイプ取得
-    const mimeType = await invoke<string>('get_mime_type', { path })
+    // パスから画像情報を取得する
+    for (const { uuid, path, fileName, fileSize, mime, dir } of imageInfos) {
+      // 完了データに存在する場合は取り除く
+      newComplete.delete(uuid)
 
-    // 変換対象の画像形式か確認
-    if (isAllowInputMIMEType(mimeType)) {
-      const fileName = await basename(path)
-      const fileSize = await invoke<number>('get_file_size', { path })
-
-      image.standby.set(uuid, {
+      newStandby.set(uuid, {
         path,
         fileName: [...dir, fileName].join('/'),
         baseName: fileName.replace(/\.\w+$/, ''),
         dir,
-        mimeType,
+        mime,
         fileSrc: convertFileSrc(path),
         size: { before: fileSize, after: 0 },
       })
-    } else {
-      flags.unsupported = true
     }
 
-    image.progress.count++
+    image.standby = newStandby
+    image.complete = newComplete
+
+    await nextTick()
+    await sleep(400)
+  } catch (error) {
+    notification.load.failed(getErrorMessage(error))
+  } finally {
+    unlistenTotal()
+    unlistenProgress()
+    image.done()
   }
-
-  image.done()
-
-  loadNotification(flags)
 }
 
 /** 画像を変換する */
 export async function convertImages(): Promise<void> {
   const image = useImageStore()
-  const { format, quality, output } = image
-  let isSuccess = true
-  let message = ''
+  const { format, quality, output } = image.options
+  let errMsg = ''
 
   image.initProgress('converting', image.standby.size)
 
   /** Tauri側へ渡す値 */
   const fileData = [...image.standby.entries()]
     .map(([uuid, { path, baseName, dir }]) => {
-      const name = `${baseName}.${format}`
-      return { uuid, path, name, dir }
+      const fileName = `${baseName}.${format}`
+      return { uuid, path, fileName, dir }
     })
 
   // 進捗処理イベント
@@ -103,15 +103,7 @@ export async function convertImages(): Promise<void> {
     'convert_images',
     { fileData, format, quality, output },
   ).catch((error) => {
-    isSuccess = false
-
-    if (error instanceof Error) {
-      message = error.message
-    } else if (typeof error === 'string') {
-      message = error
-    } else {
-      message = 'Unknown Error'
-    }
+    errMsg = getErrorMessage(error)
 
     // 変換成功したものだけ取得する
     return invoke<ConvertedData[]>('check_existing_files', { fileData, output })
@@ -119,35 +111,46 @@ export async function convertImages(): Promise<void> {
 
   unlisten()
 
-  // 部分的に変換されなかったものがあった場合
-  if (isSuccess && result.length < fileData.length) {
-    message = 'Partial Error'
-  }
+  // 一時的な非リアクティブMapを作る
+  const newStandby = new Map(image.standby)
+  const newComplete = new Map(image.complete)
+  const newBackup = new Map(image.backup)
 
   // データ整理
   for (const { uuid, path, fileSize } of result) {
-    const orig = image.standby.get(uuid)
+    const orig = newStandby.get(uuid)
     if (!orig) continue
 
-    image.complete.set(uuid, {
+    newComplete.set(uuid, {
       path,
       fileName: [...orig.dir, `${orig.baseName}.${format}`].join('/'),
       baseName: orig.baseName,
       dir: orig.dir,
-      mimeType: `image/${format}`,
+      mime: `image/${format}`,
       fileSrc: convertFileSrc(path),
       size: {
         before: orig.size.before,
         after: fileSize,
       },
     })
-    image.backup.set(uuid, orig)
-    image.standby.delete(uuid)
+    newBackup.set(uuid, orig)
+    newStandby.delete(uuid)
   }
 
+  image.standby = newStandby
+  image.complete = newComplete
+  image.backup = newBackup
+
+  await nextTick()
   await sleep(400)
 
   image.done()
 
-  convertNotification(isSuccess, message)
+  if (errMsg) {
+    notification.convert.failed(errMsg)
+  } else if (result.length < fileData.length) {
+    notification.convert.partial()
+  } else {
+    notification.convert.success()
+  }
 }
