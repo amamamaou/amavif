@@ -1,5 +1,23 @@
 import { t } from '@/i18n'
 
+/** 画像が多い場合の確認 */
+export async function confirm(total: number): Promise<boolean> {
+  try {
+    await ElMessageBox.confirm(
+      t('confirm.message', { total: total.toLocaleString() }),
+      t('confirm.title'),
+      {
+        type: 'warning',
+        center: true,
+        cancelButtonText: t('confirm.cancel'),
+      },
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** ロード系 */
 export const load = {
   /** 画像読み込みエラー */
@@ -15,6 +33,14 @@ export const load = {
     ElNotification.info({
       title: t('noti.empty.title'),
       message: t('noti.empty.message'),
+    })
+  },
+
+  /** 画像が数件スキップされた場合 */
+  skip(total: number): void {
+    ElNotification.info({
+      title: t('noti.skip.title'),
+      message: t('noti.skip.message', { total: total.toLocaleString() }),
     })
   },
 } as const

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { selectDialog } from '@/libs/utils'
+import { confirm } from '@/libs/feedback'
 
 const { t } = useI18n()
 const image = useImageStore()
@@ -31,16 +32,8 @@ async function selectOutput(): Promise<void> {
 async function convertImages() {
   if (image.standby.size > 500) {
     // 数が多い場合は確認する
-    ElMessageBox.confirm(
-      t('confirm.message'),
-      t('confirm.title'),
-      {
-        type: 'warning',
-        center: true,
-        cancelButtonText: t('confirm.cancel'),
-      },
-    )
-      .then(image.convertImages)
+    const result = await confirm(image.standby.size)
+    if (result) image.convertImages()
   } else {
     image.convertImages()
   }
@@ -128,10 +121,6 @@ en:
   tooltip:
     image: No images selected
     output: Select output folder
-  confirm:
-    title: Too Many Images!
-    message: You're trying to convert a lot of images. This might slow things down or take some time. Continue?
-    cancel: Cancel
 
 ja:
   placeholder: 出力先を選択してください
@@ -145,10 +134,6 @@ ja:
   tooltip:
     image: 変換する画像がありません
     output: 出力先を選択してください
-  confirm:
-    title: 画像が多すぎます！
-    message: 変換対象の画像の数が多いため処理が重くなり、時間がかかるおそれがあります。よろしいですか？
-    cancel: キャンセル
 </i18n>
 
 <style scoped>

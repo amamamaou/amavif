@@ -3,7 +3,8 @@ import { LazyStore } from '@tauri-apps/plugin-store'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { once, listen } from '@tauri-apps/api/event'
 import { getErrorMessage, sleep } from '@/libs/utils'
-import { load, convert } from '@/libs/notification'
+import { confirm, load, convert } from '@/libs/feedback'
+import { Amavif } from '@/types/globals'
 
 /** 処理ステータス */
 type ProgressStatus = 'idle' | 'loading' | 'converting'
@@ -20,23 +21,6 @@ interface ProgressState {
   status: ProgressStatus;
   count: number;
   total: number;
-}
-
-/** 画像情報 */
-interface ImageInfo {
-  uuid: string;
-  path: string;
-  fileName: string,
-  fileSize: number;
-  mime: Amavif.MIMEType;
-  dir: string[];
-}
-
-/** 変換データ */
-interface ConvertedData {
-  uuid: string,
-  path: string,
-  fileSize: number,
 }
 
 /** 設定ファイル */
@@ -117,15 +101,22 @@ export const useImageStore = defineStore('image', () => {
       const unlistenTotal = await once<number>('total', (event) => {
         progress.total = event.payload
       })
-      const unlistenProgress = await listen('progress', () => progress.count++)
+      const unlisten = await listen('progress', () => progress.count++)
 
       try {
         // パスから画像情報を取得する
-        const imageInfos = await invoke<ImageInfo[]>('get_image_info', { paths })
+        const imageInfos = await invoke<Amavif.ImageInfo[]>('get_image_info', { paths })
+        const imageTotal = imageInfos.length
 
-        if (imageInfos.length === 0) {
+        if (imageTotal === 0) {
           load.empty()
           return
+        }
+
+        // 数が多い場合は確認する
+        if (imageTotal > 500) {
+          const result = await confirm(imageTotal)
+          if (!result) return
         }
 
         // 一時的な非リアクティブMapを作る
@@ -153,11 +144,16 @@ export const useImageStore = defineStore('image', () => {
 
         await nextTick()
         await sleep(400)
+
+        // 数が合わないときは通知する
+        if (progress.total > imageTotal) {
+          load.skip(progress.total - imageTotal)
+        }
       } catch (error) {
         load.failed(getErrorMessage(error))
       } finally {
         unlistenTotal()
-        unlistenProgress()
+        unlisten()
         progress.status = 'idle'
       }
     },
@@ -185,12 +181,12 @@ export const useImageStore = defineStore('image', () => {
       const unlisten = await listen('progress', () => progress.count++)
 
       // 変換開始
-      const result = await invoke<ConvertedData[]>('convert_images', { fileData, options })
+      const result = await invoke<Amavif.ConvertedData[]>('convert_images', { fileData, options })
         .catch((error) => {
           errMsg = getErrorMessage(error)
 
           // 変換成功したものだけ取得する
-          return invoke<ConvertedData[]>('check_existing_files', { fileData, output })
+          return invoke<Amavif.ConvertedData[]>('check_existing_files', { fileData, output })
         })
 
       unlisten()

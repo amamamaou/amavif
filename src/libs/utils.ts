@@ -2,7 +2,7 @@ import { h, type VNode } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import { t } from '@/i18n'
-import { errorNoti } from '@/libs/notification'
+import { errorNoti } from '@/libs/feedback'
 
 /** 画像選択ダイアログを開く */
 export async function openDialog(): Promise<string[]> {

@@ -3,6 +3,11 @@
     "select": "Select Files",
     "output": "Select Output"
   },
+  "confirm": {
+    "title": "Too Many Images!",
+    "message": "You're trying to convert {total} images. This might slow things down or take some time. Continue?",
+    "cancel": "Cancel"
+  },
   "noti": {
     "success": {
       "title": "Completed",
@@ -23,6 +28,10 @@
     "empty": {
       "title": "No image files found",
       "message": "No images were found that can be loaded."
+    },
+    "skip": {
+      "title": "Unsupported images found",
+      "message": "Found {total} unsupported image file(s). These were skipped."
     }
   }
 }
