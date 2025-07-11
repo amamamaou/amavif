@@ -12,10 +12,10 @@ const image = useImageStore()
   <div class="list-header">
     <el-button
       v-if="image.backup.size > 0"
+      type="primary"
       plain
       :icon="svgRender(mdiArrowULeftTop)"
       :disabled="image.isLocked"
-      color="var(--color-primary)"
       @click="image.restore"
     >
       {{ t('button.again') }}
@@ -33,10 +33,10 @@ const image = useImageStore()
     </el-button>
 
     <el-button
+      type="primary"
       plain
       :icon="svgRender(mdiFolderOpen)"
       :disabled="image.options.output === ''"
-      color="var(--color-primary)"
       class="flex-end"
       @click="openFileExplorer(image.options.output)"
     >

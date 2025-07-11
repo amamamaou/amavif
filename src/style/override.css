@@ -1,0 +1,30 @@
+.el-overlay,
+.el-image-viewer__wrapper {
+  backdrop-filter: blur(5px);
+}
+
+.el-button--primary {
+  --el-button-bg-color: #7e5f9b;
+  --el-button-text-color: var(--el-color-white);
+  --el-button-border-color: #7e5f9b;
+  --el-button-hover-bg-color: rgb(165, 143, 185);
+  --el-button-hover-text-color: var(--el-color-white);
+  --el-button-hover-border-color: rgb(165, 143, 185);
+  --el-button-active-bg-color: rgb(105, 80, 128);
+  --el-button-active-border-color: rgb(105, 80, 128);
+  --el-button-disabled-bg-color: rgb(191, 175, 205);
+  --el-button-disabled-text-color: var(--el-color-white);
+  --el-button-disabled-border-color: rgb(191, 175, 205);
+
+  &.is-plain {
+    --el-button-bg-color: rgb(242, 239, 245);
+    --el-button-text-color: #7e5f9b;
+    --el-button-border-color: rgb(191, 175, 205);
+    --el-button-hover-bg-color: #7e5f9b;
+    --el-button-hover-border-color: #7e5f9b;
+    --el-button-active-text-color: var(--el-color-white);
+    --el-button-disabled-bg-color: rgb(242, 239, 245);
+    --el-button-disabled-text-color: rgb(191, 175, 205);
+    --el-button-disabled-border-color: rgb(229, 223, 235);
+  }
+}

@@ -13,9 +13,9 @@ async function addImages(): Promise<void> {
 
 <template>
   <el-button
+    type="primary"
     :icon="svgRender(mdiFileImagePlus)"
     :disabled="image.isLocked"
-    color="var(--color-primary)"
     @click="addImages"
   >
     <slot />
