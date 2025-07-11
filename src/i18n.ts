@@ -1,5 +1,4 @@
 import { createI18n } from 'vue-i18n'
-import { watch } from 'vue'
 import { LazyStore } from '@tauri-apps/plugin-store'
 
 import en from '@/locales/en.json'

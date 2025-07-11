@@ -5,7 +5,34 @@ import SvgIcon from '@/components/SvgIcon.vue'
 
 const { t } = useI18n()
 const image = useImageStore()
-const size = computed<Amavif.FileSize>(() => image.convertedSize)
+
+/** 待機中の画像の合計サイズ */
+const beforeSize = computed<number>(() => {
+  let total = 0
+  for (const { size } of image.standby.values()) {
+    total += size.before
+  }
+  return total
+})
+
+/** 変換前と変換後の画像の合計サイズ */
+const afterSize = reactive({ before: 0, after: 0 })
+watchEffect(() => {
+  let before = 0
+  let after = 0
+
+  // reactiveなオブジェクトに直接足すのは避ける
+  for (const { size } of image.complete.values()) {
+    before += size.before
+    after += size.after
+  }
+
+  afterSize.before = before
+  afterSize.after = after
+})
+
+const tagType = computed(() => afterSize.before - afterSize.after > 0 ? 'success' : 'warning')
+const ratio = computed<number>(() => afterSize.after / afterSize.before * 100 - 100)
 </script>
 
 <template>
@@ -18,7 +45,7 @@ const size = computed<Amavif.FileSize>(() => image.convertedSize)
       <dd>
         <span class="total">{{ image.standby.size }}</span>
         <el-tag type="info" size="small">
-          {{ formatBytes(image.standbySize) }}
+          {{ formatBytes(beforeSize) }}
         </el-tag>
       </dd>
     </div>
@@ -32,22 +59,22 @@ const size = computed<Amavif.FileSize>(() => image.convertedSize)
         <span class="total">{{ image.complete.size }}</span>
 
         <el-tag type="info" size="small" class="before">
-          {{ formatBytes(size.before) }}
+          {{ formatBytes(afterSize.before) }}
         </el-tag>
 
         <SvgIcon :path="mdiArrowRight" />
 
         <el-tag type="primary" size="small" class="after">
-          {{ formatBytes(size.after) }}
+          {{ formatBytes(afterSize.after) }}
         </el-tag>
 
         <el-tag
-          :type="size.before - size.after > 0 ? 'success' : 'warning'"
+          :type="tagType"
           effect="dark"
           size="small"
           class="size"
         >
-          {{ (size.after / size.before * 100 - 100).toFixed(1) }}%
+          {{ ratio.toFixed(1) }}%
         </el-tag>
       </dd>
     </div>

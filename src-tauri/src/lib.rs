@@ -184,6 +184,13 @@ struct FileInfo {
     dir: Vec<String>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+struct ImageOptions {
+    format: String,
+    quality: u8,
+    output: String,
+}
+
 /// 変換後データ
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -198,16 +205,14 @@ struct ConvertedData {
 async fn convert_images(
     app: tauri::AppHandle,
     file_data: Vec<FileInfo>,
-    format: String,
-    quality: u8,
-    output: String,
+    options: ImageOptions,
 ) -> Result<Vec<ConvertedData>, String> {
     // フォーマットチェック
-    if !matches!(format.as_str(), "avif" | "webp") {
-        return Err(format!("Unknown format: {}", format));
+    if !matches!(options.format.as_str(), "avif" | "webp") {
+        return Err(format!("Unknown format: {}", options.format));
     }
 
-    let output_dir = PathBuf::from(&output);
+    let output_dir = PathBuf::from(&options.output);
 
     // もしディレクトリが存在しない場合は作る
     if !output_dir.is_dir() {
@@ -238,11 +243,13 @@ async fn convert_images(
             // ファイル名を結合する
             output_path.push(&item.file_name);
 
+            let path = PathBuf::from(&item.path);
+
             // 各種エンコード
-            if format == "webp" {
-                encode::to_webp(&item.path, &output_path, quality).ok()?;
-            } else if format == "avif" {
-                encode::to_avif(&item.path, &output_path, quality).ok()?;
+            if options.format == "webp" {
+                encode::to_webp(&path, &output_path, options.quality).ok()?;
+            } else if options.format == "avif" {
+                encode::to_avif(&path, &output_path, options.quality).ok()?;
             }
 
             // ファイルサイズ計算

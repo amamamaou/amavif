@@ -2,7 +2,7 @@ import { h, type VNode } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 import { t } from '@/i18n'
-import notification from '@/libs/notification'
+import { errorNoti } from '@/libs/notification'
 
 /** 画像選択ダイアログを開く */
 export async function openDialog(): Promise<string[]> {
@@ -45,7 +45,7 @@ export async function openFileExplorer(path: string): Promise<void> {
   try {
     await invoke<void>('open_file_explorer', { path })
   } catch (error) {
-    notification.error(getErrorMessage(error))
+    errorNoti(getErrorMessage(error))
   }
 }
 
