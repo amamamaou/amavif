@@ -11,7 +11,7 @@ const { t } = useI18n()
   <Teleport to="body">
     <Transition>
       <aside v-if="isDropEnter" class="drop-overlay">
-        <div class="drop-message">
+        <div class="drop-content">
           <SvgIcon :path="mdiFileImagePlus" class="icon" />
           <p class="text">{{ t('drop-text') }}</p>
         </div>
@@ -42,7 +42,7 @@ ja:
   color: #fff;
 }
 
-.drop-message {
+.drop-content {
   text-align: center;
 
   .icon {

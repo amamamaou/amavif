@@ -11,13 +11,10 @@ const { t } = useI18n()
   <div class="drop-zone">
     <LocaleSelect />
 
-    <div class="drop-message">
+    <div class="drop-content">
       <SvgIcon :path="mdiFileImagePlus" class="icon" />
-      <p class="text">{{ t('drop-text') }}</p>
-    </div>
-
-    <div class="drop-select">
-      <span class="text">{{ t('drop-or') }}</span>
+      <p class="main-text">{{ t('drop-text') }}</p>
+      <div class="sub-text">{{ t('drop-or') }}</div>
       <AddImages class="button">{{ t('select-image') }}</AddImages>
     </div>
   </div>
@@ -46,7 +43,7 @@ ja:
   color: var(--color-text);
 }
 
-.drop-message {
+.drop-content {
   text-align: center;
 
   .icon {
@@ -54,26 +51,20 @@ ja:
     color: var(--color-primary);
   }
 
-  .text {
+  .main-text {
     margin-top: 8px;
     font-size: 1.8rem;
     font-weight: 700;
   }
-}
 
-.drop-select {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 16px;
-
-  .text {
-    margin-right: 8px;
+  .sub-text {
+    margin-top: 12px;
     font-size: 1.6rem;
     font-weight: 600;
   }
 
   .button {
+    margin-top: 16px;
     font-weight: 700;
 
     :deep(.el-icon) {
