@@ -44,7 +44,7 @@ function previewImage(id: string): void {
           :src="item.fileSrc"
           :alt="item.fileName"
           :preview-src-list="[item.fileSrc]"
-          lazy
+          loading="lazy"
           preview-teleported
           hide-on-click-modal
         />
@@ -109,10 +109,10 @@ function previewImage(id: string): void {
           :hide-after="0"
         >
           <el-button
+            type="primary"
             :icon="LoupeIcon"
             circle
             plain
-            color="var(--color-primary)"
             @click="previewImage(uuid)"
           />
         </el-tooltip>
