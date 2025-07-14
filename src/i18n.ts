@@ -16,10 +16,7 @@ export const i18n = createI18n({
 export async function initI18n(): Promise<void> {
   const locale = await store.get<'en' | 'ja'>('locale')
   if (locale) i18n.global.locale.value = locale
-
-  watch(i18n.global.locale, async (value) => {
-    await store.set('locale', value)
-  }, { immediate: true })
+  watchEffect(() => store.set('locale', i18n.global.locale.value))
 }
 
 export const t = i18n.global.t

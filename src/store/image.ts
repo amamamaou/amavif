@@ -2,9 +2,13 @@ import { defineStore } from 'pinia'
 import { LazyStore } from '@tauri-apps/plugin-store'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { once, listen } from '@tauri-apps/api/event'
+import { open } from '@tauri-apps/plugin-dialog'
+import { t } from '@/i18n'
 import { getErrorMessage, sleep } from '@/libs/utils'
-import { confirm, load, convert } from '@/libs/feedback'
-import { Amavif } from '@/types/globals'
+import { confirm, load, convert, errorNoti } from '@/libs/feedback'
+
+/** 確認を出す画像数のしきい値 */
+const IMAGE_CONFIRM_THRESHOLD = 500
 
 /** 処理ステータス */
 type ProgressStatus = 'idle' | 'loading' | 'converting'
@@ -114,9 +118,8 @@ export const useImageStore = defineStore('image', () => {
         }
 
         // 数が多い場合は確認する
-        if (imageTotal > 500) {
-          const result = await confirm(imageTotal)
-          if (!result) return
+        if (imageTotal > IMAGE_CONFIRM_THRESHOLD) {
+          if (!await confirm(imageTotal)) return
         }
 
         // 一時的な非リアクティブMapを作る
@@ -160,7 +163,14 @@ export const useImageStore = defineStore('image', () => {
 
     /** 画像を変換する */
     async convertImages() {
-      if (standby.value.size === 0) return
+      const standbySize = standby.value.size
+
+      if (standbySize === 0) return
+
+      // 数が多い場合は確認する
+      if (standbySize > IMAGE_CONFIRM_THRESHOLD) {
+        if (!await confirm(standbySize)) return
+      }
 
       const { format, output } = options
       let errMsg = ''
@@ -243,6 +253,38 @@ export const useImageStore = defineStore('image', () => {
       if (format) options.format = format
       if (quality) options.quality = quality
       if (output) options.output = output
+
+      // 変更を監視する
+      watchEffect(() => store.set('format', options.format))
+      watchEffect(() => store.set('quality', options.quality))
+      watchEffect(() => store.set('output', options.output))
+    },
+
+    /** 画像選択ダイアログを開く */
+    async openDialog() {
+      const paths = await open({
+        title: t('dialog.select'),
+        multiple: true,
+        directory: false,
+        canCreateDirectories: false,
+        filters: [
+          {
+            name: 'Image Files',
+            extensions: ['jpg', 'jpeg', 'png', 'webp'],
+          },
+        ],
+      })
+      if (paths) this.addImages(paths)
+    },
+
+    /** 出力先を エクスプローラー/Finder で開く */
+    async openOutput() {
+      if (!options.output) return
+      try {
+        await invoke<void>('open_file_explorer', { path: options.output })
+      } catch (error) {
+        errorNoti(getErrorMessage(error))
+      }
     },
 
     /** 画像をリストから取り除く */
@@ -262,22 +304,14 @@ export const useImageStore = defineStore('image', () => {
       resetMap(true)
     },
 
-    /** 形式を保存する */
-    async setFormat(format: Amavif.Format) {
-      options.format = format
-      await store.set('format', format)
-    },
-
-    /** 出力先パスを保存する */
-    async setOutput(output: string) {
-      options.output = output
-      await store.set('output', output)
-    },
-
-    /** クオリティを保存する */
-    async setQuality(quality: number) {
-      options.quality = quality
-      await store.set('quality', quality)
+    /** 出力先選択ダイアログを開き出力先パスを保存する */
+    async selectOutput() {
+      const path = await open({
+        title: t('dialog.output'),
+        directory: true,
+        defaultPath: options.output || undefined,
+      })
+      options.output = path ?? ''
     },
   }
 })

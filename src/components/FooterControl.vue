@@ -1,19 +1,6 @@
 <script setup lang="ts">
-import { selectDialog } from '@/libs/utils'
-import { confirm } from '@/libs/feedback'
-
 const { t } = useI18n()
 const image = useImageStore()
-
-const format = computed<Amavif.Format>({
-  get() { return image.options.format },
-  set(value) { image.setFormat(value) },
-})
-
-const quality = computed<number>({
-  get() { return image.options.quality },
-  set(value) { image.setQuality(value) },
-})
 
 /** ツールチップメッセージ */
 const tooltipContent = computed<string>(() => {
@@ -21,23 +8,6 @@ const tooltipContent = computed<string>(() => {
   if (image.options.output === '') return t('tooltip.output')
   return ''
 })
-
-/** 出力先選択 */
-async function selectOutput(): Promise<void> {
-  const path = await selectDialog(image.options.output)
-  image.setOutput(path)
-}
-
-/** 変換開始 */
-async function convertImages() {
-  if (image.standby.size > 500) {
-    // 数が多い場合は確認する
-    const result = await confirm(image.standby.size)
-    if (result) image.convertImages()
-  } else {
-    image.convertImages()
-  }
-}
 </script>
 
 <template>
@@ -50,7 +20,10 @@ async function convertImages() {
       :label="t('label.format')"
       class="item-format"
     >
-      <el-select v-model="format" class="format-select">
+      <el-select
+        v-model="image.options.format"
+        class="format-select"
+      >
         <el-option value="webp" label="WebP" />
         <el-option value="avif" label="AVIF" />
       </el-select>
@@ -61,7 +34,7 @@ async function convertImages() {
       class="item-quality"
     >
       <el-slider
-        v-model="quality"
+        v-model="image.options.quality"
         show-input
         class="quality-slider"
       />
@@ -75,7 +48,7 @@ async function convertImages() {
         type="primary"
         plain
         class="select-button"
-        @click="selectOutput"
+        @click="image.selectOutput"
       >
         {{ t('button.output') }}
       </el-button>
@@ -84,7 +57,7 @@ async function convertImages() {
         :value="image.options.output"
         :placeholder="t('placeholder')"
         readonly
-        @click="selectOutput"
+        @click="image.selectOutput"
       />
     </el-form-item>
 
@@ -99,7 +72,7 @@ async function convertImages() {
           size="large"
           class="convert-button"
           :disabled="!image.canConvert"
-          @click="convertImages"
+          @click="image.convertImages"
         >
           {{ t('button.convert') }}
         </el-button>

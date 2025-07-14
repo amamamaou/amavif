@@ -1,52 +1,10 @@
 import { h, type VNode } from 'vue'
-import { invoke } from '@tauri-apps/api/core'
-import { open } from '@tauri-apps/plugin-dialog'
-import { t } from '@/i18n'
-import { errorNoti } from '@/libs/feedback'
-
-/** 画像選択ダイアログを開く */
-export async function openDialog(): Promise<string[]> {
-  const paths = await open({
-    title: t('dialog.select'),
-    multiple: true,
-    directory: false,
-    canCreateDirectories: false,
-    filters: [
-      {
-        name: 'Image Files',
-        extensions: ['jpg', 'jpeg', 'png', 'webp'],
-      },
-    ],
-  })
-  return paths ?? []
-}
-
-/** 出力先選択ダイアログを開く */
-export async function selectDialog(defaultPath: string): Promise<string> {
-  const path = await open({
-    title: t('dialog.output'),
-    directory: true,
-    defaultPath: defaultPath || undefined,
-  })
-  return path ?? ''
-}
 
 /** catchによるエラー判別 */
 export function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error
   if (error instanceof Error) return error.message
   return 'Unknown Error'
-}
-
-/** 指定したパスを開く */
-export async function openFileExplorer(path: string): Promise<void> {
-  if (!path) return
-
-  try {
-    await invoke<void>('open_file_explorer', { path })
-  } catch (error) {
-    errorNoti(getErrorMessage(error))
-  }
 }
 
 /** バイト数を変換 */

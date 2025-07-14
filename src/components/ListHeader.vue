@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { openFileExplorer, svgRender } from '@/libs/utils'
+import { svgRender } from '@/libs/utils'
 import AddImages from '@/components/AddImages.vue'
 import LocaleSelect from '@/components/LocaleSelect.vue'
 import { mdiArrowULeftTop, mdiFolderOpen, mdiTrashCanOutline } from '@mdi/js'
@@ -38,7 +38,7 @@ const image = useImageStore()
       :icon="svgRender(mdiFolderOpen)"
       :disabled="image.options.output === ''"
       class="flex-end"
-      @click="openFileExplorer(image.options.output)"
+      @click="image.openOutput"
     >
       {{ t('button.output') }}
     </el-button>
