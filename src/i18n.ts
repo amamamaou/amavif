@@ -11,11 +11,10 @@ export const i18n = createI18n({
   messages: { en, ja },
 })
 
-export async function initI18n(): Promise<void> {
-  const store = await load('settings.json')
+load('settings.json').then(async (store) => {
   const locale = await store.get<'en' | 'ja'>('locale')
   if (locale) i18n.global.locale.value = locale
   watchEffect(() => store.set('locale', i18n.global.locale.value))
-}
+})
 
 export const t = i18n.global.t

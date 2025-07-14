@@ -84,6 +84,22 @@ export const useImageStore = defineStore('image', () => {
     if (deleted) infoMap.value = new Map(infoMap.value)
   }
 
+  // 設定を読み込む
+  load('settings.json').then(async (store) => {
+    const format = await store.get<Amavif.Format>('format')
+    const quality = await store.get<number>('quality')
+    const output = await store.get<string>('output')
+
+    if (format) options.format = format
+    if (quality) options.quality = quality
+    if (output) options.output = output
+
+    // 変更を監視する
+    watchEffect(() => store.set('format', options.format))
+    watchEffect(() => store.set('quality', options.quality))
+    watchEffect(() => store.set('output', options.output))
+  })
+
   return {
     // --- State ---
     standby, complete, backup, options, progress,
@@ -239,23 +255,6 @@ export const useImageStore = defineStore('image', () => {
       } else {
         ConvertNoti.success()
       }
-    },
-
-    /** 設定を読み込む */
-    async loadSettings() {
-      const store = await load('settings.json')
-      const format = await store.get<Amavif.Format>('format')
-      const quality = await store.get<number>('quality')
-      const output = await store.get<string>('output')
-
-      if (format) options.format = format
-      if (quality) options.quality = quality
-      if (output) options.output = output
-
-      // 変更を監視する
-      watchEffect(() => store.set('format', options.format))
-      watchEffect(() => store.set('quality', options.quality))
-      watchEffect(() => store.set('output', options.output))
     },
 
     /** 画像選択ダイアログを開く */
