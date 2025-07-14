@@ -2,6 +2,9 @@
 const { t } = useI18n()
 const image = useImageStore()
 
+/** バージョン */
+const APP_VERSION = import.meta.env.VITE_APP_VERSION
+
 /** ツールチップメッセージ */
 const tooltipContent = computed<string>(() => {
   if (image.standby.size === 0) return t('tooltip.image')
@@ -77,6 +80,8 @@ const tooltipContent = computed<string>(() => {
           {{ t('button.convert') }}
         </el-button>
       </el-tooltip>
+
+      <div class="version">v{{ APP_VERSION }}</div>
     </el-form-item>
   </el-form>
 </template>
@@ -161,6 +166,18 @@ ja:
 
   .item-button {
     grid-area: 1 / 3 / 3 / 4;
+
+    :deep(.el-form-item__content) {
+      justify-content: center;
+      align-items: end;
+    }
+
+    .version {
+      color: var(--el-text-color-regular);
+      font-size: 1.2rem;
+      font-weight: 600;
+      line-height: 1;
+    }
   }
 }
 

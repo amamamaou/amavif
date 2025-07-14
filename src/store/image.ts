@@ -7,6 +7,9 @@ import { t } from '@/i18n'
 import { getErrorMessage, sleep } from '@/libs/utils'
 import { confirm, LoadNoti, ConvertNoti, errorNoti } from '@/libs/feedback'
 
+/** Storeファイル */
+const STORE_FILE = import.meta.env.VITE_STORE_FILE
+
 /** 確認を出す画像数のしきい値 */
 const IMAGE_CONFIRM_THRESHOLD = 500
 
@@ -85,7 +88,7 @@ export const useImageStore = defineStore('image', () => {
   }
 
   // 設定を読み込む
-  load('settings.json').then(async (store) => {
+  load(STORE_FILE).then(async (store) => {
     const format = await store.get<Amavif.Format>('format')
     const quality = await store.get<number>('quality')
     const output = await store.get<string>('output')
