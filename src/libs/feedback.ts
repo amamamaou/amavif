@@ -19,7 +19,7 @@ export async function confirm(total: number): Promise<boolean> {
 }
 
 /** ロード系 */
-export const load = {
+export const LoadNoti = {
   /** 画像読み込みエラー */
   failed(msg: string): void {
     ElNotification.error({
@@ -46,7 +46,7 @@ export const load = {
 } as const
 
 /** 変換系 */
-export const convert = {
+export const ConvertNoti = {
   /** 変換成功 */
   success(): void {
     ElNotification.success({

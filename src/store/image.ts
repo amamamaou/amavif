@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import { LazyStore } from '@tauri-apps/plugin-store'
+import { load } from '@tauri-apps/plugin-store'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
 import { once, listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
 import { t } from '@/i18n'
 import { getErrorMessage, sleep } from '@/libs/utils'
-import { confirm, load, convert, errorNoti } from '@/libs/feedback'
+import { confirm, LoadNoti, ConvertNoti, errorNoti } from '@/libs/feedback'
 
 /** 確認を出す画像数のしきい値 */
 const IMAGE_CONFIRM_THRESHOLD = 500
@@ -26,9 +26,6 @@ interface ProgressState {
   count: number;
   total: number;
 }
-
-/** 設定ファイル */
-const store = new LazyStore('settings.json')
 
 /** 変換情報ストア */
 export const useImageStore = defineStore('image', () => {
@@ -113,7 +110,7 @@ export const useImageStore = defineStore('image', () => {
         const imageTotal = imageInfos.length
 
         if (imageTotal === 0) {
-          load.empty()
+          LoadNoti.empty()
           return
         }
 
@@ -150,10 +147,10 @@ export const useImageStore = defineStore('image', () => {
 
         // 数が合わないときは通知する
         if (progress.total > imageTotal) {
-          load.skip(progress.total - imageTotal)
+          LoadNoti.skip(progress.total - imageTotal)
         }
       } catch (error) {
-        load.failed(getErrorMessage(error))
+        LoadNoti.failed(getErrorMessage(error))
       } finally {
         unlistenTotal()
         unlisten()
@@ -236,16 +233,17 @@ export const useImageStore = defineStore('image', () => {
       progress.status = 'idle'
 
       if (errMsg) {
-        convert.failed(errMsg)
+        ConvertNoti.failed(errMsg)
       } else if (result.length < fileData.length) {
-        convert.partial()
+        ConvertNoti.partial()
       } else {
-        convert.success()
+        ConvertNoti.success()
       }
     },
 
     /** 設定を読み込む */
     async loadSettings() {
+      const store = await load('settings.json')
       const format = await store.get<Amavif.Format>('format')
       const quality = await store.get<number>('quality')
       const output = await store.get<string>('output')

@@ -1,10 +1,8 @@
 import { createI18n } from 'vue-i18n'
-import { LazyStore } from '@tauri-apps/plugin-store'
+import { load } from '@tauri-apps/plugin-store'
 
 import en from '@/locales/en.json'
 import ja from '@/locales/ja.json'
-
-const store = new LazyStore('settings.json')
 
 export const i18n = createI18n({
   legacy: false,
@@ -14,6 +12,7 @@ export const i18n = createI18n({
 })
 
 export async function initI18n(): Promise<void> {
+  const store = await load('settings.json')
   const locale = await store.get<'en' | 'ja'>('locale')
   if (locale) i18n.global.locale.value = locale
   watchEffect(() => store.set('locale', i18n.global.locale.value))
