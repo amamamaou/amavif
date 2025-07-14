@@ -19,11 +19,11 @@
     },
     "failed": {
       "title": "Failed",
-      "message": "Oops! Couldn’t convert the images: {msg}"
+      "message": "Oops! Couldn't convert the images.\n{msg}"
     },
     "load": {
       "title": "Loading failed",
-      "message": "Failed to retrieve folder information: {msg}"
+      "message": "Failed to retrieve folder information.\n{msg}"
     },
     "empty": {
       "title": "No image files found",
@@ -31,7 +31,7 @@
     },
     "skip": {
       "title": "Unsupported images found",
-      "message": "Found {total} unsupported image file(s). These were skipped."
+      "message": "Found {total} unsupported image(s). These were skipped."
     }
   }
 }
