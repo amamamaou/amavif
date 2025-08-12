@@ -60,6 +60,34 @@ fn get_file_size(path: &Path) -> u64 {
         .unwrap_or(0)
 }
 
+/// 有効なフォルダ/ディレクトリかチェックする
+fn is_active_dir(path: &Path) -> bool {
+    if !path.is_dir() {
+        return false;
+    }
+
+    // ドットから始まるディレクトリを除外する
+    if let Some(name) = path.file_name() {
+        if name.to_string_lossy().starts_with(".") {
+            return false;
+        }
+    }
+
+    // Windowsの場合は隠し属性もチェックする
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::fs::MetadataExt;
+        fs::metadata(path)
+            .map(|meta| meta.file_attributes() & 0x2 == 0)
+            .unwrap_or(false)
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        true
+    }
+}
+
 /// パス情報
 #[derive(Debug)]
 struct PathData {
@@ -88,7 +116,7 @@ fn get_image_path_recursive(
                     dir: base_dirs.clone(),
                 });
             }
-        } else if path.is_dir() {
+        } else if is_active_dir(&path) {
             // ディレクトリの場合は再帰的に取得する
             if let Some(dir_name_os) = path.file_name() {
                 let mut new_base_dirs = base_dirs.clone();
@@ -132,7 +160,7 @@ async fn get_image_info(
                     dir: Vec::new(),
                 });
             }
-        } else if path.is_dir() {
+        } else if is_active_dir(&path) {
             // ディレクトリの場合は再帰的に取得する
             if let Some(dir_name_os) = path.file_name() {
                 let mut base_dirs = Vec::new();
@@ -332,14 +360,6 @@ fn open_file_explorer(path: String) -> Result<(), String> {
             .spawn()
             .map_err(|e| e.to_string())?;
     }
-
-    // #[cfg(target_os = "linux")]
-    // {
-    //     Command::new("xdg-open")
-    //         .arg(&path)
-    //         .spawn()
-    //         .map_err(|e| e.to_string())?;
-    // }
 
     Ok(())
 }
